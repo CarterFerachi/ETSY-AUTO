@@ -40,7 +40,7 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
     log.info("Generating design for %r", keyword)
 
     response = await client.images.generate(
-        model="dall-e-3",
+        model="gpt-image-1",
         prompt=prompt,
         size="1024x1024",
         quality="standard",
