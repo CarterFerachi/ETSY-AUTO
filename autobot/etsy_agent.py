@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -76,7 +76,8 @@ async def create_listing(
     headers = await _etsy_headers()
 
     # Step 1: create draft listing
-    payload = {
+    shipping_profile_id = await _get_default_shipping_profile(settings.etsy_shop_id, headers)
+    payload: dict[str, Any] = {
         "quantity": 999,
         "title": title,
         "description": description,
@@ -87,8 +88,9 @@ async def create_listing(
         "tags": tags[:13],
         "state": "active",
         "type": "physical",
-        "shipping_profile_id": await _get_default_shipping_profile(settings.etsy_shop_id, headers),
     }
+    if shipping_profile_id is not None:
+        payload["shipping_profile_id"] = shipping_profile_id
 
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.post(
@@ -109,18 +111,21 @@ async def create_listing(
     return listing_id
 
 
-async def _get_default_shipping_profile(shop_id: str, headers: dict) -> int:
-    """Return the first shipping profile ID for the shop."""
-    async with httpx.AsyncClient(timeout=15) as client:
-        r = await client.get(
-            f"{_ETSY_BASE}/shops/{shop_id}/shipping-profiles",
-            headers=headers,
-        )
-        r.raise_for_status()
-    profiles = r.json().get("results", [])
-    if not profiles:
-        raise RuntimeError("No shipping profiles found — set one up in Etsy shop manager")
-    return profiles[0]["shipping_profile_id"]
+async def _get_default_shipping_profile(shop_id: str, headers: dict) -> int | None:
+    """Return the first shipping profile ID for the shop, or None if unavailable."""
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            r = await client.get(
+                f"{_ETSY_BASE}/shops/{shop_id}/shipping-profiles",
+                headers=headers,
+            )
+            r.raise_for_status()
+        profiles = r.json().get("results", [])
+        if profiles:
+            return profiles[0]["shipping_profile_id"]
+    except Exception as exc:
+        log.warning("Could not fetch shipping profiles (%s) — listing without one", exc)
+    return None
 
 
 async def _upload_listing_image(listing_id: str, image_path: str) -> None:
