@@ -50,13 +50,15 @@ _VARIANTS = [
 _PRODUCT_ID = 586  # Comfort Colors 1717 Garment-Dyed Heavyweight T-Shirt
 
 
-def _headers() -> dict[str, str]:
+def _headers(include_store: bool = True) -> dict[str, str]:
     settings = get_settings()
-    return {
+    h = {
         "Authorization": f"Bearer {settings.printful_api_key}",
         "Content-Type": "application/json",
-        "X-PF-Store-Id": settings.printful_store_id,
     }
+    if include_store:
+        h["X-PF-Store-Id"] = settings.printful_store_id
+    return h
 
 
 async def get_variant_ids() -> list[dict]:
@@ -95,9 +97,12 @@ async def upload_image(image_path: Path) -> str:
                 "type": "default",
                 "filename": image_path.name,
                 "contents": b64,
+                "visible": False,
             },
-            headers=_headers(),
+            headers=_headers(include_store=False),
         )
+        if not r.is_success:
+            log.error("Printful file upload error: %s %s", r.status_code, r.text)
         r.raise_for_status()
 
     file_url: str = r.json()["result"]["url"]
