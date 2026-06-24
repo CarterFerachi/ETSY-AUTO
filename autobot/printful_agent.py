@@ -98,12 +98,12 @@ async def upload_image(image_path: Path) -> str:
     async with httpx.AsyncClient(timeout=60) as client:
         r = await client.post(
             f"{_BASE}/files",
-            data={
+            json={
                 "type": "default",
                 "filename": image_path.name,
                 "url": f"data:image/png;base64,{b64}",
             },
-            headers=headers,
+            headers={**headers, "Content-Type": "application/json"},
         )
         if not r.is_success:
             log.error("Printful file upload error: %s %s", r.status_code, r.text)
