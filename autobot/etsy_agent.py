@@ -57,9 +57,11 @@ async def _get_access_token() -> str:
 async def _etsy_headers() -> dict[str, str]:
     token = await _get_access_token()
     settings = get_settings()
+    key = settings.etsy_api_key
+    log.info("Etsy auth: key=%s…%s token=%s…", key[:4], key[-4:], token[-6:])
     return {
         "Authorization": f"Bearer {token}",
-        "x-api-key": settings.etsy_api_secret or settings.etsy_api_key,
+        "x-api-key": key,
         "Content-Type": "application/json",
     }
 
