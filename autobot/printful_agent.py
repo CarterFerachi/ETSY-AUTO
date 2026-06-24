@@ -22,30 +22,32 @@ log = logging.getLogger(__name__)
 
 _BASE = "https://api.printful.com"
 
-# Printful variant IDs for Gildan 18000 Heavy Blend Crewneck (4 colors x 5 sizes)
-# These are Printful's catalog variant IDs — confirmed for this product
+# Printful variant IDs for Comfort Colors 1717 Garment-Dyed Heavyweight T-Shirt
+# Product ID 586 — 4 colors x 5 sizes = 20 variants
 _VARIANTS = [
-    {"id": 4012, "color": "Black",      "size": "S"},
-    {"id": 4013, "color": "Black",      "size": "M"},
-    {"id": 4014, "color": "Black",      "size": "L"},
-    {"id": 4015, "color": "Black",      "size": "XL"},
-    {"id": 4016, "color": "Black",      "size": "2XL"},
-    {"id": 4017, "color": "White",      "size": "S"},
-    {"id": 4018, "color": "White",      "size": "M"},
-    {"id": 4019, "color": "White",      "size": "L"},
-    {"id": 4020, "color": "White",      "size": "XL"},
-    {"id": 4021, "color": "White",      "size": "2XL"},
-    {"id": 4022, "color": "Sand",       "size": "S"},
-    {"id": 4023, "color": "Sand",       "size": "M"},
-    {"id": 4024, "color": "Sand",       "size": "L"},
-    {"id": 4025, "color": "Sand",       "size": "XL"},
-    {"id": 4026, "color": "Sand",       "size": "2XL"},
-    {"id": 4027, "color": "Sport Grey", "size": "S"},
-    {"id": 4028, "color": "Sport Grey", "size": "M"},
-    {"id": 4029, "color": "Sport Grey", "size": "L"},
-    {"id": 4030, "color": "Sport Grey", "size": "XL"},
-    {"id": 4031, "color": "Sport Grey", "size": "2XL"},
+    {"id": 15114, "color": "Black", "size": "S"},
+    {"id": 15115, "color": "Black", "size": "M"},
+    {"id": 15116, "color": "Black", "size": "L"},
+    {"id": 15117, "color": "Black", "size": "XL"},
+    {"id": 15118, "color": "Black", "size": "2XL"},
+    {"id": 15124, "color": "White", "size": "S"},
+    {"id": 15125, "color": "White", "size": "M"},
+    {"id": 15126, "color": "White", "size": "L"},
+    {"id": 15127, "color": "White", "size": "XL"},
+    {"id": 15128, "color": "White", "size": "2XL"},
+    {"id": 16523, "color": "Ivory", "size": "S"},
+    {"id": 16524, "color": "Ivory", "size": "M"},
+    {"id": 16525, "color": "Ivory", "size": "L"},
+    {"id": 16526, "color": "Ivory", "size": "XL"},
+    {"id": 16527, "color": "Ivory", "size": "2XL"},
+    {"id": 15176, "color": "Grey",  "size": "S"},
+    {"id": 15177, "color": "Grey",  "size": "M"},
+    {"id": 15178, "color": "Grey",  "size": "L"},
+    {"id": 15179, "color": "Grey",  "size": "XL"},
+    {"id": 15180, "color": "Grey",  "size": "2XL"},
 ]
+
+_PRODUCT_ID = 586  # Comfort Colors 1717 Garment-Dyed Heavyweight T-Shirt
 
 
 def _headers() -> dict[str, str]:
@@ -113,18 +115,13 @@ async def create_product(
     """Create a Printful sync product and return its sync product ID."""
     settings = get_settings()
 
-    # Fetch real variant IDs from Printful catalog
-    variants = await get_variant_ids()
-    if not variants:
-        raise RuntimeError("No Printful variants found — check product ID")
-
     sync_variants = [
         {
             "variant_id": v["id"],
             "retail_price": str(retail_price),
             "files": [{"type": "front", "url": image_url}],
         }
-        for v in variants
+        for v in _VARIANTS
     ]
 
     payload = {
