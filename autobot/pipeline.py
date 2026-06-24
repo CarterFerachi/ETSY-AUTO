@@ -18,7 +18,7 @@ from pathlib import Path
 
 from .config import get_settings
 from .design_generator import generate_design
-from .etsy_agent import create_listing
+from .printify_agent import create_product, publish_product, upload_image
 from .trend_scout import get_trending_keywords
 
 log = logging.getLogger(__name__)
@@ -159,21 +159,23 @@ async def _process_keyword(keyword: str, _unused: int = 0) -> None:
     log.info("Processing keyword: %r", keyword)
 
     design_path = await generate_design(keyword, out_dir=_DESIGNS_DIR)
+    image_id = await upload_image(design_path)
 
     title = _make_title(keyword)
     description = _make_description(keyword)
     tags = _make_tags(keyword)
     settings = get_settings()
 
-    listing_id = await create_listing(
+    product_id = await create_product(
         title=title,
         description=description,
+        image_id=image_id,
         tags=tags,
-        price_usd=settings.base_price_usd,
-        image_path=str(design_path),
+        retail_price_cents=int(settings.base_price_usd * 100),
     )
+    await publish_product(product_id)
 
-    log.info("Done: keyword=%r listing_id=%s", keyword, listing_id)
+    log.info("Done: keyword=%r product_id=%s", keyword, product_id)
 
 
 def _make_title(keyword: str) -> str:
