@@ -18,7 +18,7 @@ from pathlib import Path
 
 from .config import get_settings
 from .design_generator import generate_design
-from .printify_agent import create_product, publish_product, upload_image
+from .printful_agent import create_product, upload_image
 from .trend_scout import get_trending_keywords
 
 log = logging.getLogger(__name__)
@@ -113,8 +113,6 @@ def _daily_listing_limit() -> int:
 
 async def run_pipeline(top_n_trends: int = 10) -> None:
     """Discover trends, generate designs, create & publish products safely."""
-    settings = get_settings()
-    retail_price_cents = int(settings.base_price_usd * 100)
     published = _load_published()
     limit = _daily_listing_limit()
 
@@ -140,7 +138,7 @@ async def run_pipeline(top_n_trends: int = 10) -> None:
             log.info("Daily listing limit (%d) reached — stopping", limit)
             break
         try:
-            await _process_keyword(kw, retail_price_cents)
+            await _process_keyword(kw, 0)
             published.add(kw)
             _save_published(published)
             processed += 1
@@ -157,25 +155,25 @@ async def run_pipeline(top_n_trends: int = 10) -> None:
     log.info("=== Pipeline complete | listed %d products ===", processed)
 
 
-async def _process_keyword(keyword: str, retail_price_cents: int) -> None:
+async def _process_keyword(keyword: str, _unused: int = 0) -> None:
     log.info("Processing keyword: %r", keyword)
 
     design_path = await generate_design(keyword, out_dir=_DESIGNS_DIR)
-    image_id = await upload_image(design_path)
+    image_url = await upload_image(design_path)
 
     title = _make_title(keyword)
     description = _make_description(keyword)
     tags = _make_tags(keyword)
+    settings = get_settings()
 
     product_id = await create_product(
         title=title,
         description=description,
-        image_id=image_id,
+        image_url=image_url,
         tags=tags,
-        retail_price_cents=retail_price_cents,
+        retail_price=settings.base_price_usd,
     )
 
-    await publish_product(product_id)
     log.info("Done: keyword=%r product_id=%s", keyword, product_id)
 
 

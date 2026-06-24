@@ -11,10 +11,13 @@ load_dotenv()
 class Settings:
     openai_api_key: str = os.environ["OPENAI_API_KEY"]
 
-    printify_api_key: str = os.environ["PRINTIFY_API_KEY"]
-    printify_shop_id: str = os.environ["PRINTIFY_SHOP_ID"]
-    printify_blueprint_id: int = int(os.getenv("PRINTIFY_BLUEPRINT_ID", "5"))
+    printify_api_key: str = os.getenv("PRINTIFY_API_KEY", "")
+    printify_shop_id: str = os.getenv("PRINTIFY_SHOP_ID", "")
+    printify_blueprint_id: int = int(os.getenv("PRINTIFY_BLUEPRINT_ID", "6"))
     printify_print_provider_id: int = int(os.getenv("PRINTIFY_PRINT_PROVIDER_ID", "99"))
+
+    printful_api_key: str = os.getenv("PRINTFUL_API_KEY", "")
+    printful_store_id: str = os.getenv("PRINTFUL_STORE_ID", "18377932")
 
     etsy_api_key: str = os.getenv("ETSY_API_KEY", "")
     etsy_access_token: str = os.getenv("ETSY_ACCESS_TOKEN", "")
