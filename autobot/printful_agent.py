@@ -85,32 +85,41 @@ async def get_variant_ids() -> list[dict]:
     return variants
 
 
-async def upload_image(image_path: Path) -> str:
-    """Upload a PNG to Printful files API and return the file URL."""
-    raw = image_path.read_bytes()
-    b64 = base64.b64encode(raw).decode()
-
+async def _upload_to_imgbb(image_path: Path) -> str:
+    """Upload image to imgbb and return a public URL for Printful."""
     settings = get_settings()
-    headers = {
-        "Authorization": f"Bearer {settings.printful_api_key}",
-    }
+    b64 = base64.b64encode(image_path.read_bytes()).decode()
+    async with httpx.AsyncClient(timeout=60) as client:
+        r = await client.post(
+            "https://api.imgbb.com/1/upload",
+            data={"key": settings.imgbb_api_key, "image": b64},
+        )
+        r.raise_for_status()
+    url: str = r.json()["data"]["url"]
+    log.info("Uploaded to imgbb → %s", url)
+    return url
+
+
+async def upload_image(image_path: Path) -> str:
+    """Upload image publicly then register it with Printful. Returns Printful file URL."""
+    settings = get_settings()
+    public_url = await _upload_to_imgbb(image_path)
 
     async with httpx.AsyncClient(timeout=60) as client:
         r = await client.post(
             f"{_BASE}/files",
-            json={
-                "type": "default",
-                "filename": image_path.name,
-                "url": f"data:image/png;base64,{b64}",
+            json={"type": "default", "filename": image_path.name, "url": public_url},
+            headers={
+                "Authorization": f"Bearer {settings.printful_api_key}",
+                "Content-Type": "application/json",
             },
-            headers={**headers, "Content-Type": "application/json"},
         )
         if not r.is_success:
             log.error("Printful file upload error: %s %s", r.status_code, r.text)
         r.raise_for_status()
 
     file_url: str = r.json()["result"]["url"]
-    log.info("Uploaded image → Printful URL %s", file_url)
+    log.info("Registered with Printful → %s", file_url)
     return file_url
 
 

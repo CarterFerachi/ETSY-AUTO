@@ -18,6 +18,7 @@ class Settings:
 
     printful_api_key: str = os.getenv("PRINTFUL_API_KEY", "")
     printful_store_id: str = os.getenv("PRINTFUL_STORE_ID", "18377932")
+    imgbb_api_key: str = os.getenv("IMGBB_API_KEY", "")
 
     etsy_api_key: str = os.getenv("ETSY_API_KEY", "")
     etsy_access_token: str = os.getenv("ETSY_ACCESS_TOKEN", "")
