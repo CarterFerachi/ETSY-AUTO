@@ -22,13 +22,28 @@ log = logging.getLogger(__name__)
 
 _BASE = "https://api.printify.com/v1"
 
-# Standard sizes for a unisex tee; adjust as needed
+# 4 colors x 5 sizes = 20 variants (Black, White, Sand, Sport Grey — S through 2XL)
 _DEFAULT_VARIANTS = [
     {"id": 12126, "price": 0, "is_enabled": True},  # Black / S
     {"id": 12125, "price": 0, "is_enabled": True},  # Black / M
     {"id": 12124, "price": 0, "is_enabled": True},  # Black / L
     {"id": 12127, "price": 0, "is_enabled": True},  # Black / XL
     {"id": 12128, "price": 0, "is_enabled": True},  # Black / 2XL
+    {"id": 12102, "price": 0, "is_enabled": True},  # White / S
+    {"id": 12101, "price": 0, "is_enabled": True},  # White / M
+    {"id": 12100, "price": 0, "is_enabled": True},  # White / L
+    {"id": 12103, "price": 0, "is_enabled": True},  # White / XL
+    {"id": 12104, "price": 0, "is_enabled": True},  # White / 2XL
+    {"id": 12054, "price": 0, "is_enabled": True},  # Sand / S
+    {"id": 12053, "price": 0, "is_enabled": True},  # Sand / M
+    {"id": 12052, "price": 0, "is_enabled": True},  # Sand / L
+    {"id": 12055, "price": 0, "is_enabled": True},  # Sand / XL
+    {"id": 12056, "price": 0, "is_enabled": True},  # Sand / 2XL
+    {"id": 12072, "price": 0, "is_enabled": True},  # Sport Grey / S
+    {"id": 12071, "price": 0, "is_enabled": True},  # Sport Grey / M
+    {"id": 12070, "price": 0, "is_enabled": True},  # Sport Grey / L
+    {"id": 12073, "price": 0, "is_enabled": True},  # Sport Grey / XL
+    {"id": 12074, "price": 0, "is_enabled": True},  # Sport Grey / 2XL
 ]
 
 
