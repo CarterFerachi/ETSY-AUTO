@@ -59,7 +59,7 @@ async def _etsy_headers() -> dict[str, str]:
     settings = get_settings()
     return {
         "Authorization": f"Bearer {token}",
-        "x-api-key": settings.etsy_api_key,
+        "x-api-key": settings.etsy_api_secret or settings.etsy_api_key,
         "Content-Type": "application/json",
     }
 

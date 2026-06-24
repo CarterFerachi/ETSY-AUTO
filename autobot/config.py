@@ -21,6 +21,7 @@ class Settings:
     imgbb_api_key: str = os.getenv("IMGBB_API_KEY", "")
 
     etsy_api_key: str = os.getenv("ETSY_API_KEY", "")
+    etsy_api_secret: str = os.getenv("ETSY_API_SECRET", "")
     etsy_access_token: str = os.getenv("ETSY_ACCESS_TOKEN", "")
     etsy_refresh_token: str = os.getenv("ETSY_REFRESH_TOKEN", "")
     etsy_shop_id: str = os.getenv("ETSY_SHOP_ID", "")
