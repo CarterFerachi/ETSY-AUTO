@@ -1,87 +1,62 @@
 """
-Scrape Etsy search pages to surface trending t-shirt keywords.
+Keyword source for the daily pipeline.
 
-Strategy:
-  1. Hit Etsy's public search for several seed queries.
-  2. Pull listing titles from the HTML response.
-  3. Score recurring n-grams; return the top-N as trend keywords.
+Uses a large curated pool of proven t-shirt niches and rotates through them
+randomly each day. This avoids scraping blocks while still producing variety.
 """
 from __future__ import annotations
 
 import logging
-import re
-from collections import Counter
-from typing import Sequence
-
-import httpx
-from bs4 import BeautifulSoup
+import random
 
 log = logging.getLogger(__name__)
 
-_SEED_QUERIES = [
-    "trending t-shirt",
-    "funny graphic tee",
-    "vintage shirt design",
-    "aesthetic t-shirt",
-    "motivational tshirt",
+# Broad pool of evergreen + trending t-shirt niches
+_KEYWORD_POOL = [
+    # Hobbies & interests
+    "hiking adventure", "camping life", "fishing dad", "rock climbing",
+    "mountain biker", "trail runner", "kayaking lover", "surfing vibes",
+    "yoga life", "gym motivation", "weightlifting", "running club",
+    "cycling enthusiast", "skateboarding", "snowboarding", "hunting season",
+    # Professions
+    "nurse life", "teacher appreciation", "engineer mindset", "firefighter proud",
+    "police officer", "military veteran", "chef life", "mechanic garage",
+    "farmer life", "trucker life", "construction worker", "electrician",
+    "plumber life", "dentist humor", "doctor life", "pharmacist",
+    # Family & relationships
+    "dog mom", "cat dad", "dog dad", "cat mom", "plant mom",
+    "new dad", "girl dad", "boy mom", "grandma life", "grandpa life",
+    "best uncle", "best aunt", "big sister", "little brother",
+    # Humor & attitude
+    "introverted but willing to discuss cats", "coffee before talkie",
+    "nap queen", "sarcasm loading", "monday hater", "weekend vibes",
+    "adulting is hard", "pizza lover", "taco tuesday", "donut worry",
+    # Lifestyle
+    "beach life", "lake life", "desert vibes", "city life", "country life",
+    "van life", "tiny house", "minimalist living", "off grid living",
+    "plant based", "vegan life", "sustainable living",
+    # Pets
+    "golden retriever mom", "french bulldog dad", "labrador lover",
+    "german shepherd", "dachshund life", "corgi obsessed", "pug life",
+    "beagle lover", "pitbull mom", "rescue dog parent",
+    # Pop culture themes (safe, generic)
+    "retro aesthetic", "vintage vibes", "80s lover", "90s kid",
+    "sunset lover", "dark academia", "cottagecore", "y2k aesthetic",
+    # Sports (generic, no team names)
+    "baseball mom", "football dad", "soccer life", "basketball lover",
+    "volleyball player", "tennis player", "swimmer life", "wrestling dad",
+    # Seasons & holidays (generic)
+    "summer vibes", "fall lover", "winter warrior", "spring garden",
+    "halloween lover", "christmas spirit", "grateful thankful blessed",
+    # Motivational
+    "hustle hard", "dream big", "never give up", "grind mindset",
+    "rise and shine", "built different", "level up", "stay humble",
+    "be kind", "spread love", "good vibes only", "positive energy",
 ]
-
-_STOP_WORDS = {
-    "t", "shirt", "tee", "tshirt", "t-shirt", "unisex", "womens", "mens",
-    "funny", "cool", "cute", "gift", "for", "the", "a", "an", "and", "or",
-    "with", "in", "of", "to", "is", "my", "your", "i", "you",
-}
-
-_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-    ),
-    "Accept-Language": "en-US,en;q=0.9",
-}
-
-
-async def _fetch_listing_titles(client: httpx.AsyncClient, query: str) -> list[str]:
-    url = "https://www.etsy.com/search"
-    params = {"q": query, "explicit": "1", "ref": "pagination"}
-    try:
-        r = await client.get(url, params=params, headers=_HEADERS, timeout=15)
-        r.raise_for_status()
-    except httpx.HTTPError as exc:
-        log.warning("Etsy fetch failed for %r: %s", query, exc)
-        return []
-
-    soup = BeautifulSoup(r.text, "lxml")
-    titles: list[str] = []
-    for el in soup.select("h3.wt-text-caption, h2[data-listing-id]"):
-        text = el.get_text(separator=" ", strip=True)
-        if text:
-            titles.append(text.lower())
-    return titles
-
-
-def _extract_keywords(titles: Sequence[str], top_n: int = 10) -> list[str]:
-    counter: Counter[str] = Counter()
-    for title in titles:
-        words = re.findall(r"[a-z]+", title)
-        meaningful = [w for w in words if w not in _STOP_WORDS and len(w) > 3]
-        # unigrams
-        counter.update(meaningful)
-        # bigrams
-        counter.update(f"{a} {b}" for a, b in zip(meaningful, meaningful[1:]))
-
-    return [kw for kw, _ in counter.most_common(top_n)]
 
 
 async def get_trending_keywords(top_n: int = 10) -> list[str]:
-    """Return up to *top_n* trending t-shirt keyword phrases from Etsy."""
-    all_titles: list[str] = []
-    async with httpx.AsyncClient(follow_redirects=True) as client:
-        for q in _SEED_QUERIES:
-            titles = await _fetch_listing_titles(client, q)
-            log.info("Seed %r → %d titles", q, len(titles))
-            all_titles.extend(titles)
-
-    keywords = _extract_keywords(all_titles, top_n=top_n)
+    """Return *top_n* keywords sampled from the curated pool."""
+    keywords = random.sample(_KEYWORD_POOL, min(top_n, len(_KEYWORD_POOL)))
     log.info("Trending keywords: %s", keywords)
     return keywords
