@@ -43,7 +43,7 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         model="gpt-image-1",
         prompt=prompt,
         size="1024x1024",
-        quality="standard",
+        quality="medium",
         n=1,
     )
 
