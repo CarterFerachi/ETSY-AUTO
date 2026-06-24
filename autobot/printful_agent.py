@@ -90,16 +90,20 @@ async def upload_image(image_path: Path) -> str:
     raw = image_path.read_bytes()
     b64 = base64.b64encode(raw).decode()
 
+    settings = get_settings()
+    headers = {
+        "Authorization": f"Bearer {settings.printful_api_key}",
+    }
+
     async with httpx.AsyncClient(timeout=60) as client:
         r = await client.post(
             f"{_BASE}/files",
-            json={
+            data={
                 "type": "default",
                 "filename": image_path.name,
-                "contents": b64,
-                "visible": False,
+                "url": f"data:image/png;base64,{b64}",
             },
-            headers=_headers(include_store=False),
+            headers=headers,
         )
         if not r.is_success:
             log.error("Printful file upload error: %s %s", r.status_code, r.text)
