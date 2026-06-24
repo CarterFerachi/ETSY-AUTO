@@ -157,6 +157,8 @@ async def create_product(
             json=payload,
             headers=_headers(),
         )
+        if not r.is_success:
+            log.error("Printful create_product error: %s %s", r.status_code, r.text)
         r.raise_for_status()
 
     product_id: str = str(r.json()["result"]["id"])
