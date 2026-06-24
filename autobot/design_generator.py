@@ -15,12 +15,15 @@ from .config import get_settings
 log = logging.getLogger(__name__)
 
 _PROMPT_TEMPLATE = (
-    "A bold, high-contrast graphic t-shirt design on a pure white background. "
+    "A premium graphic t-shirt design, isolated on a pure white background, centered with no border. "
     "Theme: {theme}. "
-    "Style: flat vector illustration, vibrant colors, no photograph, no text unless "
-    "the theme specifically calls for it. "
-    "The artwork must be centered with plenty of white space around it, "
-    "print-ready PNG transparency style."
+    "Style: detailed hand-drawn illustration with personality and charm, similar to top-selling Etsy graphic tees. "
+    "Use a vintage or retro aesthetic with slightly distressed textures, rich earthy tones, and bold outlines. "
+    "Include a clever, witty short phrase or caption that matches the theme. "
+    "The illustration should have depth, shading, and fine linework — not flat or simplistic. "
+    "Make it look like a professional screen-print design. "
+    "No background, no shadows outside the design, no photo-realism, pure white surrounding the artwork. "
+    "Print-ready, high detail, suitable for direct-to-garment printing."
 )
 
 
@@ -40,7 +43,7 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         model="gpt-image-1",
         prompt=prompt,
         size="1024x1024",
-        quality="medium",
+        quality="high",
         n=1,
     )
 
