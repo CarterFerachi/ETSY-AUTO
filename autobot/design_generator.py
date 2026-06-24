@@ -45,7 +45,6 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         size="1024x1024",
         quality="standard",
         n=1,
-        response_format="url",
     )
 
     image_url = response.data[0].url
