@@ -64,6 +64,88 @@ async def _etsy_headers() -> dict[str, str]:
     }
 
 
+async def create_listing(
+    title: str,
+    description: str,
+    tags: list[str],
+    price_usd: float,
+    image_path: str,
+) -> str:
+    """Create an active Etsy listing with an uploaded image. Returns listing_id."""
+    settings = get_settings()
+    headers = await _etsy_headers()
+
+    # Step 1: create draft listing
+    payload = {
+        "quantity": 999,
+        "title": title,
+        "description": description,
+        "price": price_usd,
+        "who_made": "i_did",
+        "when_made": "made_to_order",
+        "taxonomy_id": 1063,  # Clothing > Shirts & Tops > T-shirts
+        "tags": tags[:13],
+        "state": "active",
+        "type": "physical",
+        "shipping_profile_id": await _get_default_shipping_profile(settings.etsy_shop_id, headers),
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(
+            f"{_ETSY_BASE}/shops/{settings.etsy_shop_id}/listings",
+            json=payload,
+            headers=headers,
+        )
+        if not r.is_success:
+            log.error("Etsy create_listing error: %s %s", r.status_code, r.text)
+        r.raise_for_status()
+
+    listing_id: str = str(r.json()["listing_id"])
+    log.info("Created Etsy listing %s: %r", listing_id, title)
+
+    # Step 2: upload image to the listing
+    await _upload_listing_image(listing_id, image_path)
+
+    return listing_id
+
+
+async def _get_default_shipping_profile(shop_id: str, headers: dict) -> int:
+    """Return the first shipping profile ID for the shop."""
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await client.get(
+            f"{_ETSY_BASE}/shops/{shop_id}/shipping-profiles",
+            headers=headers,
+        )
+        r.raise_for_status()
+    profiles = r.json().get("results", [])
+    if not profiles:
+        raise RuntimeError("No shipping profiles found — set one up in Etsy shop manager")
+    return profiles[0]["shipping_profile_id"]
+
+
+async def _upload_listing_image(listing_id: str, image_path: str) -> None:
+    """Upload a PNG file as the listing's primary image."""
+    settings = get_settings()
+    token = await _get_access_token()
+    # Image upload must be multipart, not JSON
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "x-api-key": settings.etsy_api_key,
+    }
+    async with httpx.AsyncClient(timeout=60) as client:
+        with open(image_path, "rb") as f:
+            r = await client.post(
+                f"{_ETSY_BASE}/shops/{settings.etsy_shop_id}/listings/{listing_id}/images",
+                headers=headers,
+                files={"image": (image_path.split("/")[-1], f, "image/png")},
+                data={"rank": "1", "overwrite": "true"},
+            )
+            if not r.is_success:
+                log.error("Etsy image upload error: %s %s", r.status_code, r.text)
+            r.raise_for_status()
+    log.info("Uploaded image to Etsy listing %s", listing_id)
+
+
 async def activate_listing(listing_id: str) -> None:
     """Set a draft Etsy listing to 'active' (visible to buyers)."""
     settings = get_settings()
