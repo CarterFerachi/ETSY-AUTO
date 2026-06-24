@@ -16,10 +16,10 @@ class Settings:
     printify_blueprint_id: int = int(os.getenv("PRINTIFY_BLUEPRINT_ID", "5"))
     printify_print_provider_id: int = int(os.getenv("PRINTIFY_PRINT_PROVIDER_ID", "99"))
 
-    etsy_api_key: str = os.environ["ETSY_API_KEY"]
-    etsy_access_token: str = os.environ["ETSY_ACCESS_TOKEN"]
-    etsy_refresh_token: str = os.environ["ETSY_REFRESH_TOKEN"]
-    etsy_shop_id: str = os.environ["ETSY_SHOP_ID"]
+    etsy_api_key: str = os.getenv("ETSY_API_KEY", "")
+    etsy_access_token: str = os.getenv("ETSY_ACCESS_TOKEN", "")
+    etsy_refresh_token: str = os.getenv("ETSY_REFRESH_TOKEN", "")
+    etsy_shop_id: str = os.getenv("ETSY_SHOP_ID", "")
     etsy_webhook_secret: str = os.getenv("ETSY_WEBHOOK_SECRET", "")
 
     base_price_usd: float = float(os.getenv("BASE_PRICE_USD", "24.99"))
