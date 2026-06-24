@@ -15,15 +15,16 @@ from .config import get_settings
 log = logging.getLogger(__name__)
 
 _PROMPT_TEMPLATE = (
-    "A top-selling Etsy t-shirt graphic design on a pure white background. "
+    "A viral Etsy best-seller graphic t-shirt design on a pure white background. "
     "Theme: {theme}. "
-    "Style: hyper-realistic, photorealistic animal or character illustration with fun personality accessories "
-    "(sunglasses, hats, props that match the theme). The character should look almost like a real photo but "
-    "with a whimsical, humorous twist. Rich fur or texture detail, dramatic lighting, vivid colors. "
-    "Include a short fun word or phrase in a casual handwritten font at the bottom that fits the theme. "
-    "The design should be centered on a pure white background with no extra elements, "
-    "suitable for direct-to-garment printing on a t-shirt. "
-    "Extremely high detail, professional quality, similar to viral Etsy graphic tees."
+    "Style: hyper-realistic photorealistic animal or character illustration with humor and personality. "
+    "The animal or character wears fun patriotic accessories like sunglasses, hats, bandanas, "
+    "and holds props like American flags, hot dogs, sparklers, or fireworks. "
+    "Ultra-detailed fur or feather texture, cinematic lighting, vivid red white and blue colors. "
+    "Include a short bold fun text phrase in a casual handwritten or retro font that fits the theme — "
+    "placed naturally at the bottom of the design. "
+    "Centered on a pure white background, no extra borders or background colors. "
+    "Print-ready for direct-to-garment, extremely high detail, professional quality."
 )
 
 

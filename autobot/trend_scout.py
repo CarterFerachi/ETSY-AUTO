@@ -1,62 +1,79 @@
 """
 Keyword source for the daily pipeline.
 
-Uses a large curated pool of proven t-shirt niches and rotates through them
-randomly each day. This avoids scraping blocks while still producing variety.
+Currently focused on America's 250th birthday (July 4th 2026) — the biggest
+patriotic shopping event in a generation. Will switch to evergreen pool after July 4th.
 """
 from __future__ import annotations
 
 import logging
 import random
+from datetime import date
 
 log = logging.getLogger(__name__)
 
-# Broad pool of evergreen + trending t-shirt niches
-_KEYWORD_POOL = [
-    # Hobbies & interests
-    "hiking adventure", "camping life", "fishing dad", "rock climbing",
-    "mountain biker", "trail runner", "kayaking lover", "surfing vibes",
-    "yoga life", "gym motivation", "weightlifting", "running club",
-    "cycling enthusiast", "skateboarding", "snowboarding", "hunting season",
-    # Professions
-    "nurse life", "teacher appreciation", "engineer mindset", "firefighter proud",
-    "police officer", "military veteran", "chef life", "mechanic garage",
-    "farmer life", "trucker life", "construction worker", "electrician",
-    "plumber life", "dentist humor", "doctor life", "pharmacist",
-    # Family & relationships
-    "dog mom", "cat dad", "dog dad", "cat mom", "plant mom",
-    "new dad", "girl dad", "boy mom", "grandma life", "grandpa life",
-    "best uncle", "best aunt", "big sister", "little brother",
-    # Humor & attitude
-    "introverted but willing to discuss cats", "coffee before talkie",
-    "nap queen", "sarcasm loading", "monday hater", "weekend vibes",
-    "adulting is hard", "pizza lover", "taco tuesday", "donut worry",
-    # Lifestyle
-    "beach life", "lake life", "desert vibes", "city life", "country life",
-    "van life", "tiny house", "minimalist living", "off grid living",
-    "plant based", "vegan life", "sustainable living",
-    # Pets
-    "golden retriever mom", "french bulldog dad", "labrador lover",
-    "german shepherd", "dachshund life", "corgi obsessed", "pug life",
-    "beagle lover", "pitbull mom", "rescue dog parent",
-    # Pop culture themes (safe, generic)
-    "retro aesthetic", "vintage vibes", "80s lover", "90s kid",
-    "sunset lover", "dark academia", "cottagecore", "y2k aesthetic",
-    # Sports (generic, no team names)
-    "baseball mom", "football dad", "soccer life", "basketball lover",
-    "volleyball player", "tennis player", "swimmer life", "wrestling dad",
-    # Seasons & holidays (generic)
-    "summer vibes", "fall lover", "winter warrior", "spring garden",
-    "halloween lover", "christmas spirit", "grateful thankful blessed",
-    # Motivational
-    "hustle hard", "dream big", "never give up", "grind mindset",
-    "rise and shine", "built different", "level up", "stay humble",
-    "be kind", "spread love", "good vibes only", "positive energy",
+# July 4th 2026 — America's 250th birthday keywords
+_JULY4TH_POOL = [
+    # Patriotic animals (viral Etsy style)
+    "patriotic raccoon holding American flag",
+    "bald eagle wearing sunglasses fourth of july",
+    "patriotic golden retriever with hot dog and flag",
+    "american bulldog fourth of july vibes",
+    "patriotic bear drinking beer with flag",
+    "feral cat fourth of july chaos",
+    "patriotic labrador with fireworks",
+    "american raccoon eating hot dog",
+    "patriotic corgi wearing stars and stripes",
+    "bald eagle screaming freedom",
+    # 250th anniversary specific
+    "America 250th birthday 1776 2026",
+    "250 years of freedom 1776 2026",
+    "Americas 250th anniversary celebration",
+    "semiquincentennial celebration America",
+    "250 years strong America birthday",
+    # Classic patriotic
+    "merica fourth of july party",
+    "fourth of july barbecue squad",
+    "land of the free home of the brave",
+    "born on the fourth of july",
+    "fireworks and freedom fourth of july",
+    "red white and boom fourth of july",
+    "stars stripes and summer vibes",
+    "all american summer cookout",
+    "july fourth grilling and chilling",
+    "proud american fourth of july",
+    # Funny patriotic
+    "lets get this bread fourth of july",
+    "hot dogs hotdogs america july fourth",
+    "fireworks director fourth of july",
+    "american by birth patriot by choice",
+    "freedom aint free july fourth",
+    "party like its 1776",
+    "1776 vibes only fourth of july",
+    "mullet and fireworks fourth of july",
+]
+
+# Evergreen pool — used after July 4th passes
+_EVERGREEN_POOL = [
+    "hiking adventure", "camping life", "fishing dad", "dog mom",
+    "cat dad", "nurse life", "teacher appreciation", "military veteran",
+    "golden retriever mom", "retro aesthetic", "vintage vibes",
+    "beach life", "lake life", "country life", "hustle hard",
+    "built different", "good vibes only", "weekend vibes",
 ]
 
 
+def _active_pool() -> list[str]:
+    today = date.today()
+    # Use July 4th pool from now until July 10th 2026
+    if date(2026, 6, 1) <= today <= date(2026, 7, 10):
+        return _JULY4TH_POOL
+    return _EVERGREEN_POOL
+
+
 async def get_trending_keywords(top_n: int = 10) -> list[str]:
-    """Return *top_n* keywords sampled from the curated pool."""
-    keywords = random.sample(_KEYWORD_POOL, min(top_n, len(_KEYWORD_POOL)))
+    """Return *top_n* keywords from the active seasonal pool."""
+    pool = _active_pool()
+    keywords = random.sample(pool, min(top_n, len(pool)))
     log.info("Trending keywords: %s", keywords)
     return keywords
