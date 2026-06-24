@@ -67,7 +67,6 @@ async def create_product(
     image_id: str,
     tags: list[str],
     retail_price_cents: int,
-    mockup_image_id: str | None = None,
 ) -> str:
     """Create a Printify product and return its product ID."""
     settings = get_settings()
@@ -76,10 +75,6 @@ async def create_product(
         {**v, "price": retail_price_cents}
         for v in _DEFAULT_VARIANTS
     ]
-
-    images = [{"id": image_id, "x": 0.5, "y": 0.5, "scale": 1, "angle": 0}]
-    if mockup_image_id:
-        images.append({"id": mockup_image_id, "x": 0.5, "y": 0.5, "scale": 1, "angle": 0})
 
     product_payload: dict[str, Any] = {
         "title": title,
@@ -93,7 +88,15 @@ async def create_product(
                 "placeholders": [
                     {
                         "position": "front",
-                        "images": images,
+                        "images": [
+                            {
+                                "id": image_id,
+                                "x": 0.5,
+                                "y": 0.5,
+                                "scale": 1,
+                                "angle": 0,
+                            }
+                        ],
                     }
                 ],
             }

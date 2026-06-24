@@ -18,7 +18,6 @@ from pathlib import Path
 
 from .config import get_settings
 from .design_generator import generate_design
-from .mockup_generator import generate_mockup
 from .printify_agent import create_product, publish_product, upload_image
 from .trend_scout import get_trending_keywords
 
@@ -160,22 +159,9 @@ async def run_pipeline(top_n_trends: int = 10) -> None:
 
 async def _process_keyword(keyword: str, retail_price_cents: int) -> None:
     log.info("Processing keyword: %r", keyword)
-    settings = get_settings()
 
     design_path = await generate_design(keyword, out_dir=_DESIGNS_DIR)
     image_id = await upload_image(design_path)
-
-    # Generate lifestyle mockup via Higgsfield if API key is configured
-    mockup_image_id: str | None = None
-    if settings.higgsfield_api_key:
-        try:
-            mockup_bytes = await generate_mockup(design_path, keyword, settings.higgsfield_api_key)
-            mockup_path = _DESIGNS_DIR / f"mockup_{design_path.name}"
-            mockup_path.write_bytes(mockup_bytes)
-            mockup_image_id = await upload_image(mockup_path)
-            log.info("Mockup uploaded → Printify ID %s", mockup_image_id)
-        except Exception:
-            log.warning("Mockup generation failed — continuing without mockup")
 
     title = _make_title(keyword)
     description = _make_description(keyword)
@@ -185,7 +171,6 @@ async def _process_keyword(keyword: str, retail_price_cents: int) -> None:
         title=title,
         description=description,
         image_id=image_id,
-        mockup_image_id=mockup_image_id,
         tags=tags,
         retail_price_cents=retail_price_cents,
     )

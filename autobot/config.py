@@ -21,7 +21,6 @@ class Settings:
     etsy_refresh_token: str = os.getenv("ETSY_REFRESH_TOKEN", "")
     etsy_shop_id: str = os.getenv("ETSY_SHOP_ID", "")
     etsy_webhook_secret: str = os.getenv("ETSY_WEBHOOK_SECRET", "")
-    higgsfield_api_key: str = os.getenv("HIGGSFIELD_API_KEY", "")
 
     base_price_usd: float = float(os.getenv("BASE_PRICE_USD", "24.99"))
     webhook_host: str = os.getenv("WEBHOOK_HOST", "0.0.0.0")
