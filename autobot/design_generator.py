@@ -136,6 +136,82 @@ _PROMPTS: dict[str, str] = {
         "'IT\\'S ONLY TREASON IF YOU LOSE' as the bold main statement. "
         "Eagle silhouette and stars as accents."
     ),
+    "hail mary to freedom george washington football": (
+        "Vintage sports t-shirt graphic. Caricature of George Washington in a navy "
+        "American football uniform and helmet, mid-throw action pose with a football, "
+        "American flag pattern on his helmet. Dynamic motion lines. "
+        "Bold distressed text: 'HAIL MARY' arched at top in red, 'TO FREEDOM' large at bottom in navy."
+    ),
+    "philadelphia liberty bells world series champs 1776": (
+        "Vintage baseball poster t-shirt graphic. Five founding fathers caricatures "
+        "in old-fashioned baseball uniforms — Washington center tallest with huge wig, "
+        "round chubby Adams far left, lanky red-haired Jefferson, pot-bellied Franklin with bifocals, "
+        "young Hamilton far right. All holding bats or gloves, different expressions. "
+        "Bold distressed text: 'THE PHILADELPHIA' small at top, 'LIBERTY BELLS' large in red, "
+        "'WORLD SERIES' medium, 'CHAMPS' huge in navy, '1776' with stars at bottom."
+    ),
+    "revolutionary slam founding father basketball dunk": (
+        "Vintage sports t-shirt graphic. Caricature of a founding father in colonial attire "
+        "with powdered wig, powerfully dunking a basketball, jersey number 3, "
+        "crowd cheering behind him. Action hero pose, dynamic energy. "
+        "Bold distressed text: 'REVOLUTIONARY' arched at top in navy, 'SLAM' massive in red."
+    ),
+    "1776 independence championship ring": (
+        "Vintage t-shirt graphic. Detailed illustration of a massive gold championship ring "
+        "with '1776' on the face, 'INDEPENDENCE' engraved on the band, diamonds and stars. "
+        "Dramatic spotlight shining on it. "
+        "Bold distressed text: '1776' on the ring face, 'INDEPENDENCE' on the band."
+    ),
+    "founding fathers hockey team sons of liberty": (
+        "Vintage hockey poster t-shirt graphic. Five founding fathers caricatures "
+        "in hockey uniforms on ice — Washington center with huge wig visible under helmet, "
+        "tiny round Adams, lanky Jefferson, fat Franklin, young Hamilton. "
+        "Hockey sticks raised, arena lights behind them. Team name 'SONS' on jerseys. "
+        "Bold distressed text: 'SONS OF LIBERTY' arched at top, '1776' at bottom with stars."
+    ),
+    "george washington golfer fore independence": (
+        "Vintage sports t-shirt graphic. Caricature of George Washington in colonial attire "
+        "mid golf swing, powdered wig flopping, intense concentration face, golf ball flying. "
+        "Green golf course background circle. "
+        "Bold distressed text: 'THE' at top left, 'FORE' large in red at center, 'INDEPENDENCE' at bottom in navy."
+    ),
+    "redcoat roast 1776 founding fathers bbq": (
+        "Vintage t-shirt graphic. Caricature of founding fathers in colonial uniforms at a backyard BBQ — "
+        "Washington manning a large grill, Franklin holding BBQ tongs with a grin, "
+        "Jefferson and Adams laughing with drinks. Smoke rising from grill. Patriotic bunting. "
+        "Bold distressed text: 'REDCOAT ROAST' at top in navy with stars, '1776' in red at bottom."
+    ),
+    "fight night usa vs uk george washington boxer": (
+        "Vintage boxing poster t-shirt graphic. Caricature of George Washington as a muscular boxer "
+        "in red white and blue trunks, gloves raised in fighting stance, boxing ring behind him, "
+        "dramatic stadium lights. Intense expression. "
+        "Bold distressed text: 'FIGHT NIGHT:' at top in red, 'USA VS. UK' large at bottom in navy and red."
+    ),
+    "founding fathers freedom gamers playing video games": (
+        "Vintage t-shirt graphic. Caricature of Benjamin Franklin and George Washington "
+        "sitting side by side on a couch in colonial attire, intensely playing video games "
+        "with modern game controllers, TV screen glowing in front of them. "
+        "Franklin with bifocals on, Washington in his wig, both deeply focused. "
+        "Bold distressed text: 'FREEDOM' at top in navy, 'GAMERS' large at bottom in red."
+    ),
+    "long run to liberty george washington marathon": (
+        "Vintage t-shirt graphic. Caricature of George Washington sprinting in a marathon, "
+        "colonial uniform coat flying behind him, powdered wig streaming, determined face, "
+        "finish line ribbon ahead with American flag, city skyline in background. "
+        "Bold distressed text: 'THE LONG RUN TO' small at top in navy, 'LIBERTY' massive in red at bottom."
+    ),
+    "give me liberty cheerleaders l-i-b-e-r-t-y": (
+        "Vintage t-shirt graphic. Three cheerleaders in red white and blue uniforms "
+        "with pom-poms raised, spelling out letters. Energetic cheer poses. "
+        "Bold distressed text: 'GIVE ME A' at top in navy with stars, "
+        "large quoted text '\"L-I-B-E-R-T-Y\"' in red below with exclamation mark."
+    ),
+    "1776 trophy case america wins founding fathers": (
+        "Vintage t-shirt graphic. Illustration of a wooden trophy case / cabinet "
+        "filled with gold trophies, championship cups, medals, all engraved '1776'. "
+        "Patriotic stars and bunting as decoration. "
+        "Bold distressed text: '1776' on each trophy, 'AMERICA WINS' at top in navy."
+    ),
 }
 
 _FALLBACK_PROMPT = (

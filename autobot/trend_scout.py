@@ -31,6 +31,18 @@ _JULY4TH_POOL = [
     "250 years of freedom 1776 2026",
     "party like its 1776",
     "its only treason if you lose",
+    "hail mary to freedom george washington football",
+    "philadelphia liberty bells world series champs 1776",
+    "revolutionary slam founding father basketball dunk",
+    "1776 independence championship ring",
+    "founding fathers hockey team sons of liberty",
+    "george washington golfer fore independence",
+    "redcoat roast 1776 founding fathers bbq",
+    "fight night usa vs uk george washington boxer",
+    "founding fathers freedom gamers playing video games",
+    "long run to liberty george washington marathon",
+    "give me liberty cheerleaders l-i-b-e-r-t-y",
+    "1776 trophy case america wins founding fathers",
 ]
 
 _EVERGREEN_POOL = [
