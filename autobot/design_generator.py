@@ -113,9 +113,11 @@ _PROMPTS: dict[str, str] = {
         "Line 1: 'FIRST IN WAR.' Line 2: 'FIRST IN PEACE.' Line 3: 'FIRST IN SWAG.'"
     ),
     "America 250th birthday 1776 2026": (
-        "Vintage patriotic t-shirt graphic celebrating America's 250th birthday. "
-        "Majestic bald eagle with wings spread, surrounded by stars and burst rays. "
-        "Bold distressed text: '250 YEARS' arched at top, '1776 - 2026' at bottom."
+        "Vintage patriotic t-shirt graphic. NO people, NO faces, NO portraits anywhere. "
+        "Only a majestic bald eagle with wings fully spread, American flag shield on chest, "
+        "burst of rays behind it, stars scattered around. "
+        "Bold distressed collegiate text '250 YEARS' at top in navy with red outline. "
+        "'1776 - 2026' in distressed text at bottom with stars on each side."
     ),
     "250 years of freedom 1776 2026": (
         "Vintage typographic t-shirt design. Large distressed text '250 YEARS OF FREEDOM' "
