@@ -1,4 +1,4 @@
-"""Generate t-shirt artwork via Recraft 4.1 and return a transparent PNG file path."""
+"""Generate t-shirt artwork via Recraft and overlay text with Pillow."""
 from __future__ import annotations
 
 import logging
@@ -9,130 +9,270 @@ from pathlib import Path
 import io
 
 import httpx
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from .config import get_settings
 
 log = logging.getLogger(__name__)
 
 _RECRAFT_BASE = "https://external.api.recraft.ai/v1"
+_FONTS_DIR = Path("/app/fonts")
+_FALLBACK_FONT = None  # PIL built-in
 
-_CUSTOM_PROMPTS: dict[str, str] = {
+# ---------------------------------------------------------------------------
+# Art prompts — NO text instructions, pure visual art only
+# ---------------------------------------------------------------------------
+_ART_PROMPTS: dict[str, str] = {
     "wtf is a kilometer bald eagle": (
         "Detailed ink illustration of a bald eagle head with flowing white feathers styled like a colonial wig, "
         "wearing red American flag wayfarer sunglasses with stars and stripes on the lenses. "
-        "Bold brush-stroke text below: 'WTF IS A' in navy blue and 'KILOMETER?' in red. "
         "Vintage engraving crosshatch style, high contrast black and white with red and blue accents. "
         "Pure white background. DTG t-shirt print ready."
     ),
     "dream team of 1776 founding fathers basketball": (
         "Illustrated portrait of five founding fathers — George Washington center, Benjamin Franklin, "
         "Thomas Jefferson, John Adams, Alexander Hamilton — wearing USA Basketball jerseys red white blue. "
-        "Bold text at bottom: 'DREAM TEAM' in large red letters, 'OF 1776' below with stars. "
         "Vintage sports poster style, detailed illustration. Pure white background. DTG t-shirt print ready."
     ),
     "ben drankin benjamin franklin fourth of july": (
         "Vintage illustrated portrait of Benjamin Franklin wearing American flag aviator sunglasses "
         "and a red stars-and-stripes headband, holding up a glass of whiskey with a grin. "
-        "Distressed American flag in the background. Bold text: 'BEN' at top and 'DRANKIN' below "
-        "in large white distressed varsity font with stars. Red white and blue. DTG t-shirt print ready."
+        "Distressed American flag in the background. Red white and blue. Pure white background. DTG t-shirt print ready."
     ),
     "1776 national champs founding fathers": (
         "Illustrated group of six founding fathers in colonial uniforms all wearing cool black sunglasses, "
         "posed like a championship team photo. George Washington front and center, confident poses. "
-        "Large bold text at top: '1776 NATIONAL CHAMPS' in cream and gold collegiate font. "
-        "Banner at bottom: 'EST. 1776' with eagle crest. Slate blue vintage style. DTG t-shirt print ready."
+        "Eagle crest badge. Slate blue vintage style. Pure white background. DTG t-shirt print ready."
     ),
     "its only treason if you lose george washington": (
         "Illustrated George Washington in full colonial military uniform, wearing aviator sunglasses, "
         "walking confidently with fireworks exploding dramatically behind him. Action hero composition. "
-        "Bold text at bottom: 'IT\\'S ONLY TREASON IF YOU LOSE' in clean white font. "
         "Pure white background. DTG t-shirt print ready."
     ),
     "george washington crossing the delaware sunglasses": (
         "Dramatic illustrated scene of George Washington standing boldly at the front of a boat "
         "crossing a river, wearing aviator sunglasses, American flag waving behind him. "
-        "Epic cinematic composition, red white and blue. Bold text: 'UNBOTHERED' at bottom. "
-        "Pure white background. DTG t-shirt print ready."
+        "Epic cinematic composition, red white and blue. Pure white background. DTG t-shirt print ready."
     ),
     "founding fathers fourth of july squad goals": (
         "Illustrated group portrait of Washington, Franklin, Jefferson, Hamilton, and Adams "
         "all wearing sunglasses, posed like a modern squad photo. Casual confident energy. "
-        "Bold text: 'SQUAD GOALS' at top, 'EST. 1776' at bottom with stars. "
         "Red white and blue vintage style. Pure white background. DTG t-shirt print ready."
     ),
     "benjamin franklin original founding bro": (
         "Vintage illustrated portrait of Benjamin Franklin looking cool and confident, "
         "wearing sunglasses, lightning bolt in background referencing his electricity discovery. "
-        "Bold retro text: 'ORIGINAL FOUNDING BRO' in distressed font. Stars and stripes accents. "
-        "Pure white background. DTG t-shirt print ready."
+        "Stars and stripes accents. Pure white background. DTG t-shirt print ready."
     ),
     "1776 original bad boys founding fathers": (
         "Illustrated movie-poster style lineup of five founding fathers in colonial attire "
         "all wearing sunglasses, serious tough expressions like a police lineup. "
-        "Bold text at top: 'ORIGINAL BAD BOYS' and '1776' in large vintage font at bottom. "
         "High contrast black white red blue. Pure white background. DTG t-shirt print ready."
     ),
     "we the people fourth of july founding fathers": (
-        "Bold typographic t-shirt design centered on 'WE THE PEOPLE' in massive distressed "
-        "varsity font. Stars, eagle silhouette, and 'EST. 1776' as accents. "
-        "Red white and blue aged parchment texture aesthetic. "
-        "Pure white background. DTG t-shirt print ready."
+        "Bold eagle silhouette with stars and stripes, aged parchment texture aesthetic. "
+        "Red white and blue. Pure white background. DTG t-shirt print ready."
     ),
     "america est 1776 founding fathers vintage": (
-        "Vintage circular badge design with an eagle at center, stars around the border, "
-        "bold text 'AMERICA' at top and 'EST. 1776' at bottom. Distressed aged texture, "
-        "red white and blue, classic Americana stamp style. "
+        "Vintage circular badge design with an eagle at center, stars around the border. "
+        "Distressed aged texture, red white and blue, classic Americana stamp style. "
         "Pure white background. DTG t-shirt print ready."
     ),
     "patrick henry give me liberty or give me coffee": (
         "Illustrated portrait of Patrick Henry at a podium, dramatic expression, pointing finger, "
         "holding a coffee cup instead of a torch. Colonial setting with dramatic lighting. "
-        "Bold text: 'GIVE ME LIBERTY OR GIVE ME COFFEE' in distressed font. "
         "Pure white background. DTG t-shirt print ready."
     ),
     "george washington first in war first in peace first in swag": (
         "Cool illustrated portrait of George Washington in colonial uniform wearing sunglasses, "
-        "relaxed confident pose. Bold text: 'FIRST IN WAR. FIRST IN PEACE. FIRST IN SWAG.' "
-        "Stars and flag accents, vintage red white blue. Pure white background. DTG t-shirt print ready."
+        "relaxed confident pose. Stars and flag accents, vintage red white blue. "
+        "Pure white background. DTG t-shirt print ready."
     ),
     "America 250th birthday 1776 2026": (
-        "Stunning patriotic graphic celebrating America's 250th birthday. "
-        "Majestic bald eagle at center with wings spread, surrounded by stars and fireworks, "
-        "banner reading '250 YEARS' with '1776 - 2026' below. Vintage Americana style, "
-        "distressed textures, bold typography, red white blue. Pure white background. DTG print ready."
+        "Stunning patriotic graphic — majestic bald eagle at center with wings spread, "
+        "surrounded by stars and fireworks. Vintage Americana style, "
+        "distressed textures, red white blue. Pure white background. DTG print ready."
     ),
     "250 years of freedom 1776 2026": (
-        "Bold patriotic typography design. Large distressed text '250 YEARS OF FREEDOM' as centerpiece. "
-        "'1776 - 2026' in vintage stamp style. Stars, stripes, eagle silhouette as accents. "
-        "Aged vintage Americana aesthetic, red white blue. Pure white background. DTG print ready."
+        "Bold patriotic eagle silhouette with stars, stripes, aged vintage Americana aesthetic. "
+        "Red white blue distressed style. Pure white background. DTG print ready."
     ),
     "party like its 1776": (
-        "Illustrated founding fathers at a wild party — Washington, Franklin, Jefferson with "
-        "powdered wigs askew, holding drinks, celebrating. Fun chaotic energy. "
-        "Bold handwritten text: 'PARTY LIKE IT\\'S 1776' at bottom. "
+        "Illustrated founding fathers — Washington, Franklin, Jefferson — with "
+        "powdered wigs askew, holding drinks, celebrating. Fun chaotic party energy. "
         "Pure white background. DTG t-shirt print ready."
     ),
     "its only treason if you lose": (
-        "Bold typographic design with distressed text 'IT\\'S ONLY TREASON IF YOU LOSE' "
-        "as the main statement. Eagle silhouette and stars as accents, aged vintage style. "
-        "Red white blue distressed fonts. Pure white background. DTG t-shirt print ready."
+        "Eagle silhouette and stars as accents, aged vintage distressed style. "
+        "Red white blue. Pure white background. DTG t-shirt print ready."
     ),
 }
 
-_FALLBACK_PROMPT = (
-    "A viral Etsy best-seller graphic t-shirt design in founding fathers humor style. "
-    "Theme: {theme}. "
-    "Style: vintage illustrated portrait or typographic design featuring American founding fathers "
-    "— Washington, Franklin, Jefferson, Hamilton — in humorous modern situations. "
-    "Colonial attire with modern accessories like sunglasses. Bold distressed typography. "
+_FALLBACK_ART_PROMPT = (
+    "Vintage illustrated founding fathers humor graphic — Washington, Franklin, Jefferson, Hamilton "
+    "in humorous modern situations. Colonial attire with modern accessories like sunglasses. "
     "Red white and blue color palette, aged vintage Americana aesthetic. "
-    "Pure white background. DTG t-shirt print ready."
+    "Pure white background. DTG t-shirt print ready. Theme: {theme}."
 )
+
+# ---------------------------------------------------------------------------
+# Text to overlay on each design (top_line, bottom_line, style)
+# style: "badge" | "top_bottom" | "bottom_only" | "top_only"
+# ---------------------------------------------------------------------------
+_DESIGN_TEXT: dict[str, dict] = {
+    "wtf is a kilometer bald eagle": {
+        "top": "WTF IS A",
+        "bottom": "KILOMETER?",
+        "style": "top_bottom",
+    },
+    "dream team of 1776 founding fathers basketball": {
+        "top": "DREAM TEAM",
+        "bottom": "OF 1776",
+        "style": "top_bottom",
+    },
+    "ben drankin benjamin franklin fourth of july": {
+        "top": "BEN",
+        "bottom": "DRANKIN",
+        "style": "top_bottom",
+    },
+    "1776 national champs founding fathers": {
+        "top": "1776 NATIONAL CHAMPS",
+        "bottom": "EST. 1776",
+        "style": "top_bottom",
+    },
+    "its only treason if you lose george washington": {
+        "bottom": "IT'S ONLY TREASON IF YOU LOSE",
+        "style": "bottom_only",
+    },
+    "george washington crossing the delaware sunglasses": {
+        "bottom": "UNBOTHERED",
+        "style": "bottom_only",
+    },
+    "founding fathers fourth of july squad goals": {
+        "top": "SQUAD GOALS",
+        "bottom": "EST. 1776",
+        "style": "top_bottom",
+    },
+    "benjamin franklin original founding bro": {
+        "bottom": "ORIGINAL FOUNDING BRO",
+        "style": "bottom_only",
+    },
+    "1776 original bad boys founding fathers": {
+        "top": "ORIGINAL BAD BOYS",
+        "bottom": "1776",
+        "style": "top_bottom",
+    },
+    "we the people fourth of july founding fathers": {
+        "top": "WE THE PEOPLE",
+        "bottom": "EST. 1776",
+        "style": "top_bottom",
+    },
+    "america est 1776 founding fathers vintage": {
+        "top": "AMERICA",
+        "bottom": "EST. 1776",
+        "style": "top_bottom",
+    },
+    "patrick henry give me liberty or give me coffee": {
+        "bottom": "GIVE ME LIBERTY OR GIVE ME COFFEE",
+        "style": "bottom_only",
+    },
+    "george washington first in war first in peace first in swag": {
+        "bottom": "FIRST IN WAR. FIRST IN PEACE. FIRST IN SWAG.",
+        "style": "bottom_only",
+    },
+    "America 250th birthday 1776 2026": {
+        "top": "250 YEARS",
+        "bottom": "1776 - 2026",
+        "style": "top_bottom",
+    },
+    "250 years of freedom 1776 2026": {
+        "top": "250 YEARS OF FREEDOM",
+        "bottom": "1776 - 2026",
+        "style": "top_bottom",
+    },
+    "party like its 1776": {
+        "bottom": "PARTY LIKE IT'S 1776",
+        "style": "bottom_only",
+    },
+    "its only treason if you lose": {
+        "bottom": "IT'S ONLY TREASON IF YOU LOSE",
+        "style": "bottom_only",
+    },
+}
+
+
+def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    for name in ("Anton-Regular.ttf", "Oswald-Bold.ttf"):
+        path = _FONTS_DIR / name
+        if path.exists():
+            try:
+                return ImageFont.truetype(str(path), size)
+            except Exception:
+                pass
+    return ImageFont.load_default()
+
+
+def _text_size(draw: ImageDraw.ImageDraw, text: str, font) -> tuple[int, int]:
+    bbox = draw.textbbox((0, 0), text, font=font)
+    return bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+
+def _overlay_text(image_bytes: bytes, keyword: str) -> bytes:
+    """Draw text on the design using Pillow."""
+    text_cfg = _DESIGN_TEXT.get(keyword)
+    if not text_cfg:
+        return image_bytes
+
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    w, h = img.size
+    draw = ImageDraw.Draw(img)
+
+    top_text = text_cfg.get("top", "")
+    bottom_text = text_cfg.get("bottom", "")
+    style = text_cfg.get("style", "bottom_only")
+
+    margin = int(h * 0.04)
+    band_height = int(h * 0.11)
+
+    def draw_text_band(text: str, y: int, bg_color: tuple, text_color: tuple):
+        font_size = int(band_height * 0.6)
+        font = _load_font(font_size)
+        tw, th = _text_size(draw, text, font)
+        # Shrink font if text too wide
+        while tw > w * 0.9 and font_size > 12:
+            font_size -= 2
+            font = _load_font(font_size)
+            tw, th = _text_size(draw, text, font)
+
+        # Draw semi-transparent band
+        band = Image.new("RGBA", (w, band_height + margin * 2), bg_color)
+        img.paste(band, (0, y), band)
+
+        # Draw text centered with shadow
+        tx = (w - tw) // 2
+        ty = y + (band_height + margin * 2 - th) // 2
+        # Shadow
+        draw.text((tx + 3, ty + 3), text, font=font, fill=(0, 0, 0, 180))
+        # Main text
+        draw.text((tx, ty), text, font=font, fill=text_color)
+
+    navy = (15, 35, 90, 220)
+    red = (180, 20, 20, 220)
+    white = (255, 255, 255, 255)
+
+    if style in ("top_bottom", "top_only") and top_text:
+        draw_text_band(top_text, 0, navy, white)
+
+    if style in ("top_bottom", "bottom_only") and bottom_text:
+        draw_text_band(bottom_text, h - band_height - margin * 2, red, white)
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
 
 
 def _remove_white_background(image_bytes: bytes, threshold: int = 240) -> bytes:
-    """Replace near-white pixels with transparency using Pillow — no ML model needed."""
+    """Replace near-white pixels with transparency."""
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
     data = img.getdata()
     new_data = []
@@ -152,10 +292,10 @@ def _slugify(text: str) -> str:
 
 
 async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
-    """Generate design via Recraft 4.1, remove white background, save transparent PNG."""
+    """Generate design via Recraft, overlay text with Pillow, save transparent PNG."""
     settings = get_settings()
-    prompt = _CUSTOM_PROMPTS.get(keyword) or _FALLBACK_PROMPT.format(theme=keyword)
-    log.info("Generating design for %r via Recraft 4.1", keyword)
+    prompt = _ART_PROMPTS.get(keyword) or _FALLBACK_ART_PROMPT.format(theme=keyword)
+    log.info("Generating design for %r via Recraft", keyword)
 
     async with httpx.AsyncClient(timeout=120) as client:
         r = await client.post(
@@ -176,7 +316,7 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         r.raise_for_status()
 
     image_url: str = r.json()["data"][0]["url"]
-    log.info("Recraft generated image URL: %s", image_url)
+    log.info("Recraft image URL: %s", image_url)
 
     async with httpx.AsyncClient(timeout=60) as client:
         img_r = await client.get(image_url)
@@ -190,8 +330,11 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
     log.info("Removing white background for %r", keyword)
     transparent_bytes = _remove_white_background(image_bytes)
 
+    log.info("Overlaying text for %r", keyword)
+    final_bytes = _overlay_text(transparent_bytes, keyword)
+
     filename = f"{_slugify(keyword)}_{int(time.time())}.png"
     dest = out_dir / filename
-    dest.write_bytes(transparent_bytes)
-    log.info("Design saved (transparent) → %s", dest)
+    dest.write_bytes(final_bytes)
+    log.info("Design saved → %s", dest)
     return dest
