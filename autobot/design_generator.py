@@ -49,10 +49,11 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed varsity text: 'BEN' arched at top, 'DRANKIN' large at bottom with stars."
     ),
     "1776 national champs founding fathers": (
-        "Vintage championship t-shirt graphic. Six founding fathers in colonial uniforms "
-        "all wearing cool black sunglasses, posed like a championship team photo. "
-        "George Washington front and center. "
-        "Bold distressed collegiate text: '1776 NATIONAL CHAMPS' arched at top, 'EST. 1776' at bottom with eagle crest."
+        "Vintage championship t-shirt graphic. Five different founding fathers — "
+        "George Washington center, Benjamin Franklin, Thomas Jefferson, John Adams, Alexander Hamilton — "
+        "each with distinct faces and hairstyles, all wearing cool black sunglasses, "
+        "posed like a championship team photo. "
+        "Bold distressed collegiate text: '1776 NATIONAL CHAMPS' arched at top, 'FOUNDING FATHERS' at bottom with eagle."
     ),
     "its only treason if you lose george washington": (
         "Vintage t-shirt graphic. George Washington in colonial military uniform, wearing aviator "
