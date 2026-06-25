@@ -12,8 +12,8 @@ from datetime import date
 
 log = logging.getLogger(__name__)
 
+# Only keywords with custom art prompts + text configs in design_generator.py
 _JULY4TH_POOL = [
-    # Founding fathers viral humor (primary focus)
     "wtf is a kilometer bald eagle",
     "dream team of 1776 founding fathers basketball",
     "ben drankin benjamin franklin fourth of july",
@@ -21,31 +21,16 @@ _JULY4TH_POOL = [
     "its only treason if you lose george washington",
     "george washington crossing the delaware sunglasses",
     "founding fathers fourth of july squad goals",
-    "hamilton jefferson washington rap battle 1776",
     "benjamin franklin original founding bro",
-    "washington adams jefferson 1776 all stars",
-    "founding fathers we did it first america",
-    "thomas jefferson wrote that fourth of july",
-    "george washington first in war first in peace first in swag",
-    "patrick henry give me liberty or give me coffee",
-    "founding fathers approved this message 1776",
-    "john hancock signed it bigger fourth of july",
-    "paul revere the british are coming fourth of july",
     "1776 original bad boys founding fathers",
-    "america est 1776 founding fathers vintage",
     "we the people fourth of july founding fathers",
-    # 250th anniversary
+    "america est 1776 founding fathers vintage",
+    "patrick henry give me liberty or give me coffee",
+    "george washington first in war first in peace first in swag",
     "America 250th birthday 1776 2026",
     "250 years of freedom 1776 2026",
-    "Americas 250th anniversary celebration",
-    "1776 2026 semiquincentennial america",
-    "250 years strong america birthday",
-    # Classic funny patriotic
     "party like its 1776",
     "its only treason if you lose",
-    "freedom aint free july fourth",
-    "merica fourth of july party",
-    "mullet and fireworks fourth of july",
 ]
 
 _EVERGREEN_POOL = [
