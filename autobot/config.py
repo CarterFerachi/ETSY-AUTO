@@ -29,6 +29,8 @@ class Settings:
     etsy_webhook_secret: str = os.getenv("ETSY_WEBHOOK_SECRET", "")
 
     base_price_usd: float = float(os.getenv("BASE_PRICE_USD", "29.99"))
+    discord_webhook_url: str = os.getenv("DISCORD_WEBHOOK_URL", "")
+    approval_timeout_seconds: int = int(os.getenv("APPROVAL_TIMEOUT_SECONDS", "600"))
     webhook_host: str = os.getenv("WEBHOOK_HOST", "0.0.0.0")
     webhook_port: int = int(os.getenv("WEBHOOK_PORT", "8000"))
     log_level: str = os.getenv("LOG_LEVEL", "INFO")

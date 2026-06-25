@@ -18,6 +18,7 @@ from pathlib import Path
 
 from .config import get_settings
 from .design_generator import generate_design
+from .discord_approval import post_for_approval, wait_for_approval
 from .printify_agent import create_product, publish_product, upload_image
 from .trend_scout import get_trending_keywords
 
@@ -165,6 +166,25 @@ async def _process_keyword(keyword: str, _unused: int = 0) -> None:
     description = _make_description(keyword)
     tags = _make_tags(keyword)
     settings = get_settings()
+
+    # Upload to imgbb for Discord preview URL
+    import base64
+    import httpx as _httpx
+    b64 = base64.b64encode(design_path.read_bytes()).decode()
+    async with _httpx.AsyncClient(timeout=60) as _client:
+        _r = await _client.post(
+            "https://api.imgbb.com/1/upload",
+            data={"key": settings.imgbb_api_key, "image": b64},
+        )
+        preview_url = _r.json()["data"]["url"] if _r.is_success else ""
+
+    # Post to Discord for approval
+    message_id = await post_for_approval(title, design_path, preview_url)
+    if message_id:
+        approved = await wait_for_approval(message_id)
+        if not approved:
+            log.info("Skipping keyword %r — rejected via Discord", keyword)
+            return
 
     product_id = await create_product(
         title=title,
