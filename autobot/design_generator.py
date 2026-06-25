@@ -173,7 +173,7 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
                 "image_request": {
                     "prompt": prompt,
                     "model": "V_2",
-                    "style_type": "ILLUSTRATION",
+                    "style_type": "DESIGN",
                     "aspect_ratio": "ASPECT_1_1",
                     "magic_prompt_option": "OFF",
                 }
