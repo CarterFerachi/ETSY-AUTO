@@ -22,7 +22,7 @@ _STYLE = (
     " Vintage worn screen-print style. Limited color palette: navy blue, red, cream/off-white. "
     "Aged ink texture, distressed halftone grain, slightly faded like a well-loved vintage tee. "
     "NO bright colors, NO gradients, NO blue brushstroke backgrounds, NO drop shadows. "
-    "PURE WHITE (#FFFFFF) background only — no cream, no off-white, no grey. DTG print ready."
+    "PURE WHITE (#FFFFFF) background only — no cream, no off-white, no grey."
 )
 
 # ---------------------------------------------------------------------------
@@ -105,9 +105,10 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed vintage text: 'GIVE ME LIBERTY' at top, 'OR GIVE ME COFFEE' at bottom."
     ),
     "george washington first in war first in peace first in swag": (
-        "Vintage t-shirt graphic. Cool portrait of George Washington in colonial uniform "
-        "wearing sunglasses, relaxed confident pose. Stars and flag accents. "
-        "Bold distressed text: 'FIRST IN WAR. FIRST IN PEACE. FIRST IN SWAG.' at bottom."
+        "Vintage t-shirt graphic. Bold portrait of George Washington in colonial uniform "
+        "wearing aviator sunglasses, confident pose, stars on each side. "
+        "Three lines of bold distressed text only at bottom, no other text anywhere: "
+        "Line 1: 'FIRST IN WAR.' Line 2: 'FIRST IN PEACE.' Line 3: 'FIRST IN SWAG.'"
     ),
     "America 250th birthday 1776 2026": (
         "Vintage patriotic t-shirt graphic celebrating America's 250th birthday. "
