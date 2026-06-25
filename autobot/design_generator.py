@@ -22,7 +22,7 @@ _STYLE = (
     " Vintage worn screen-print style. Limited color palette: navy blue, red, cream/off-white. "
     "Aged ink texture, distressed halftone grain, slightly faded like a well-loved vintage tee. "
     "NO bright colors, NO gradients, NO blue brushstroke backgrounds, NO drop shadows. "
-    "Pure white background. DTG print ready."
+    "PURE WHITE (#FFFFFF) background only — no cream, no off-white, no grey. DTG print ready."
 )
 
 # ---------------------------------------------------------------------------
@@ -139,8 +139,8 @@ _FALLBACK_PROMPT = (
 )
 
 
-def _remove_white_background(image_bytes: bytes, threshold: int = 240) -> bytes:
-    """Replace near-white pixels with transparency."""
+def _remove_white_background(image_bytes: bytes, threshold: int = 220) -> bytes:
+    """Replace near-white and cream pixels with transparency."""
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
     data = img.getdata()
     new_data = []
