@@ -15,11 +15,10 @@ from .config import get_settings
 
 log = logging.getLogger(__name__)
 
-_RECRAFT_BASE = "https://external.api.recraft.ai/v1"
+_IDEOGRAM_BASE = "https://api.ideogram.ai"
 _FONTS_DIR = Path("/app/fonts")
-_FALLBACK_FONT = None  # PIL built-in
 
-# Wrapped around every art prompt — Recraft must not render any text whatsoever
+# Wrapped around every art prompt — no text in the generated artwork
 _NO_TEXT_PREFIX = "IMPORTANT: Absolutely NO text, NO words, NO letters, NO numbers, NO typography in the image. Pure artwork only. "
 _NO_TEXT_SUFFIX = " REMINDER: Zero text, zero letters, zero numbers anywhere in the final image."
 
@@ -315,28 +314,31 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
     settings = get_settings()
     base = _ART_PROMPTS.get(keyword) or _FALLBACK_ART_PROMPT.format(theme=keyword)
     prompt = _NO_TEXT_PREFIX + base + _NO_TEXT_SUFFIX
-    log.info("Generating design for %r via Recraft", keyword)
+    log.info("Generating design for %r via Ideogram", keyword)
 
     async with httpx.AsyncClient(timeout=120) as client:
         r = await client.post(
-            f"{_RECRAFT_BASE}/images/generations",
+            f"{_IDEOGRAM_BASE}/generate",
             headers={
-                "Authorization": f"Bearer {settings.recraft_api_key}",
+                "Api-Key": settings.ideogram_api_key,
                 "Content-Type": "application/json",
             },
             json={
-                "prompt": prompt,
-                "model": "recraftv3",
-                "style": "realistic_image",
-                "size": "1024x1024",
+                "image_request": {
+                    "prompt": prompt,
+                    "model": "V_2",
+                    "style_type": "ILLUSTRATION",
+                    "aspect_ratio": "ASPECT_1_1",
+                    "magic_prompt_option": "OFF",
+                }
             },
         )
         if not r.is_success:
-            log.error("Recraft error: %s %s", r.status_code, r.text)
+            log.error("Ideogram error: %s %s", r.status_code, r.text)
         r.raise_for_status()
 
     image_url: str = r.json()["data"][0]["url"]
-    log.info("Recraft image URL: %s", image_url)
+    log.info("Ideogram image URL: %s", image_url)
 
     async with httpx.AsyncClient(timeout=60) as client:
         img_r = await client.get(image_url)

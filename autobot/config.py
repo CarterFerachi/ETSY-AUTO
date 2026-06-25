@@ -11,6 +11,7 @@ load_dotenv()
 class Settings:
     openai_api_key: str = os.environ["OPENAI_API_KEY"]
     recraft_api_key: str = os.getenv("RECRAFT_API_KEY", "")
+    ideogram_api_key: str = os.getenv("IDEOGRAM_API_KEY", "")
 
     printify_api_key: str = os.getenv("PRINTIFY_API_KEY", "")
     printify_shop_id: str = os.getenv("PRINTIFY_SHOP_ID", "")
