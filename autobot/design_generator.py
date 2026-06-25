@@ -126,7 +126,7 @@ _PROMPTS: dict[str, str] = {
         "Washington with his massive wig tilted sideways holding a beer, "
         "pot-bellied Franklin with bifocals askew raising a whiskey glass, "
         "tall lanky red-haired Jefferson dancing. All with huge grins and exaggerated expressions. "
-        "Bold distressed handwritten text at bottom: 'PARTY LIKE IT\\'S 1776'."
+        "Bold distressed text in navy blue at top: 'PARTY LIKE', 'IT\\'S 1776' in large red at bottom."
     ),
     "its only treason if you lose": (
         "Vintage typographic t-shirt design. Large distressed aged text "

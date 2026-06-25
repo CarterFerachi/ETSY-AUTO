@@ -18,7 +18,7 @@ from pathlib import Path
 
 from .config import get_settings
 from .design_generator import generate_design
-from .discord_approval import post_for_approval
+from .discord_approval import post_for_approval, wait_for_approval
 from .printify_agent import create_product, publish_product, upload_image
 from .trend_scout import get_trending_keywords
 
@@ -167,7 +167,7 @@ async def _process_keyword(keyword: str, _unused: int = 0) -> None:
     tags = _make_tags(keyword)
     settings = get_settings()
 
-    # Post to Discord as a notification (no approval gate)
+    # Post to Discord — 5 min window to reject, otherwise auto-publishes
     import base64
     import httpx as _httpx
     b64 = base64.b64encode(design_path.read_bytes()).decode()
@@ -177,7 +177,13 @@ async def _process_keyword(keyword: str, _unused: int = 0) -> None:
             data={"key": settings.imgbb_api_key, "image": b64},
         )
         preview_url = _r.json()["data"]["url"] if _r.is_success else ""
-    await post_for_approval(title, design_path, preview_url)
+
+    message_id = await post_for_approval(title, design_path, preview_url)
+    if message_id:
+        approved = await wait_for_approval(message_id)
+        if not approved:
+            log.info("Skipping keyword %r — rejected via Discord", keyword)
+            return
 
     product_id = await create_product(
         title=title,
