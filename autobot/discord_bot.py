@@ -96,7 +96,8 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     """Download the attached image and push it straight to Printify + Etsy."""
     # Lazy import to avoid circular deps
     from .pipeline import _make_title, _make_description, _make_tags
-    from .printify_agent import create_product, publish_product, upload_image
+    from .printify_agent import add_lifestyle_image, create_product, publish_product, upload_image
+    from .higgsfield_agent import generate_mockup
     from .config import get_settings
 
     settings = get_settings()
@@ -129,11 +130,25 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     tmp = Path(tempfile.mkdtemp()) / f"drop_{msg_id}.png"
     tmp.write_bytes(dl.content)
 
+    mockup_tmp: Path | None = None
     try:
         image_id = await upload_image(tmp)
         title = _make_title(keyword)
         description = _make_description(keyword)
         tags = _make_tags(keyword)
+
+        # Generate lifestyle mockup if Higgsfield is configured
+        mockup_url: str | None = None
+        if settings.higgsfield_api_key:
+            try:
+                log.info("Generating lifestyle mockup for %r…", keyword)
+                mockup_tmp = await generate_mockup(tmp)
+                # Upload mockup to imgbb for a public URL
+                from .imgbb import upload_to_imgbb
+                mockup_url = await upload_to_imgbb(mockup_tmp)
+                log.info("Lifestyle mockup URL: %s", mockup_url)
+            except Exception:
+                log.warning("Mockup generation failed — continuing without it", exc_info=True)
 
         product_id = await create_product(
             title=title,
@@ -142,6 +157,10 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
             tags=tags,
             retail_price_cents=int(settings.base_price_usd * 100),
         )
+
+        if mockup_url:
+            await add_lifestyle_image(product_id, mockup_url)
+
         await publish_product(product_id)
 
         async with httpx.AsyncClient(timeout=15) as client:
@@ -162,6 +181,8 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
             )
     finally:
         tmp.unlink(missing_ok=True)
+        if mockup_tmp:
+            mockup_tmp.unlink(missing_ok=True)
 
 
 async def _poll_owner_drops(channel_id: str, token: str, owner_id: str) -> None:

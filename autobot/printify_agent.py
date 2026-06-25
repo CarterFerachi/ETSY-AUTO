@@ -167,6 +167,21 @@ async def create_product(
     return product_id
 
 
+async def add_lifestyle_image(product_id: str, image_url: str) -> None:
+    """Add a lifestyle mockup image URL to an existing Printify product."""
+    settings = get_settings()
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.put(
+            f"{_BASE}/shops/{settings.printify_shop_id}/products/{product_id}.json",
+            json={"images": [{"src": image_url, "position": "other", "is_default": False, "is_selected_for_publishing": True}]},
+            headers=_headers(),
+        )
+        if not r.is_success:
+            log.warning("Could not add lifestyle image to product %s: %s %s", product_id, r.status_code, r.text)
+        else:
+            log.info("Added lifestyle image to product %s", product_id)
+
+
 async def publish_product(product_id: str) -> None:
     """Push the product to the connected Etsy sales channel."""
     settings = get_settings()
