@@ -106,8 +106,9 @@ async def upload_image(image_path: Path) -> str:
         r.raise_for_status()
     data = r.json()
     image_id: str = data["id"]
+    preview_url: str = data.get("preview_url", "")
     log.info("Uploaded image → Printify ID %s", image_id)
-    return image_id
+    return image_id, preview_url
 
 
 async def create_product(

@@ -62,45 +62,31 @@ async def _wait_for_job(client: httpx.AsyncClient, job_id: str) -> dict:
     raise TimeoutError(f"Higgsfield job {job_id} timed out after {_POLL_TIMEOUT}s")
 
 
-async def _upload_media(client: httpx.AsyncClient, image_path: Path) -> str:
-    """Upload a local image to Higgsfield and return the media_id."""
+async def _import_media_url(client: httpx.AsyncClient, url: str) -> str:
+    """Import an image from a public URL into Higgsfield and return the media_id."""
     settings = get_settings()
-    headers = {"Authorization": f"Bearer {settings.higgsfield_api_key}"}
-
-    # Step 1: Request presigned upload URL
     r = await client.post(
-        f"{_BASE}/media",
-        headers={**headers, "Content-Type": "application/json"},
-        json={"filename": image_path.name},
+        f"{_BASE}/media/import",
+        headers={
+            "Authorization": f"Bearer {settings.higgsfield_api_key}",
+            "Content-Type": "application/json",
+        },
+        json={"url": url},
         timeout=30,
     )
+    if not r.is_success:
+        log.error("Higgsfield media import error: %s %s", r.status_code, r.text)
     r.raise_for_status()
     data = r.json()
-    media_id = data["id"]
-    upload_url = data["upload_url"]
-
-    # Step 2: PUT file bytes
-    raw = image_path.read_bytes()
-    put_r = await client.put(upload_url, content=raw, headers={"Content-Type": "image/png"}, timeout=60)
-    put_r.raise_for_status()
-
-    # Step 3: Confirm
-    confirm_r = await client.post(
-        f"{_BASE}/media/{media_id}/confirm",
-        headers={**headers, "Content-Type": "application/json"},
-        json={"type": "image"},
-        timeout=30,
-    )
-    confirm_r.raise_for_status()
-
-    log.info("Uploaded media to Higgsfield: %s", media_id)
+    media_id: str = data.get("id") or data.get("media_id") or data["results"][0]["id"]
+    log.info("Imported media to Higgsfield: %s", media_id)
     return media_id
 
 
-async def generate_mockup(design_path: Path, out_dir: Path | None = None) -> Path:
+async def generate_mockup(design_url: str, out_dir: Path | None = None) -> Path:
     """
     Generate a photorealistic lifestyle mockup of someone wearing the t-shirt design.
-    Uses GPT Image 2 with the design as a reference image.
+    Uses GPT Image 2 with the design URL as a reference image.
     Returns path to the saved mockup PNG.
     """
     if out_dir is None:
@@ -108,7 +94,7 @@ async def generate_mockup(design_path: Path, out_dir: Path | None = None) -> Pat
     out_dir.mkdir(parents=True, exist_ok=True)
 
     async with httpx.AsyncClient(timeout=120) as client:
-        media_id = await _upload_media(client, design_path)
+        media_id = await _import_media_url(client, design_url)
 
         prompt = (
             "Photorealistic product photo of a muscular male model with tattoos wearing a white "

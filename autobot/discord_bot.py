@@ -132,23 +132,22 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
 
     mockup_tmp: Path | None = None
     try:
-        image_id = await upload_image(tmp)
+        image_id, design_preview_url = await upload_image(tmp)
         title = _make_title(keyword)
         description = _make_description(keyword)
         tags = _make_tags(keyword)
 
-        # Generate lifestyle mockup if Higgsfield is configured
+        # Generate lifestyle mockup if Higgsfield is configured and we have a public design URL
         mockup_url: str | None = None
-        if settings.higgsfield_api_key:
+        if settings.higgsfield_api_key and design_preview_url:
             try:
                 log.info("Generating lifestyle mockup for %r…", keyword)
-                mockup_tmp = await generate_mockup(tmp)
-                # Upload mockup to imgbb for a public URL
+                mockup_tmp = await generate_mockup(design_preview_url)
                 from .imgbb import upload_to_imgbb
                 mockup_url = await upload_to_imgbb(mockup_tmp)
                 log.info("Lifestyle mockup URL: %s", mockup_url)
             except Exception:
-                log.warning("Mockup generation failed — continuing without it", exc_info=True)
+                log.exception("Mockup generation failed — continuing without it")
 
         product_id = await create_product(
             title=title,

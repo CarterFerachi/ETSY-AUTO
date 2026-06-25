@@ -160,7 +160,7 @@ async def _process_keyword(keyword: str, _unused: int = 0) -> None:
     log.info("Processing keyword: %r", keyword)
 
     design_path = await generate_design(keyword, out_dir=_DESIGNS_DIR)
-    image_id = await upload_image(design_path)
+    image_id, design_preview_url = await upload_image(design_path)
 
     title = _make_title(keyword)
     description = _make_description(keyword)
