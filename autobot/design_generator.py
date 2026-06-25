@@ -8,7 +8,8 @@ import time
 from pathlib import Path
 
 import httpx
-from rembg import remove
+from PIL import Image
+import io
 
 from .config import get_settings
 
@@ -156,6 +157,22 @@ _FALLBACK_PROMPT = (
 )
 
 
+def _remove_white_background(image_bytes: bytes, threshold: int = 240) -> bytes:
+    """Replace near-white pixels with transparency using Pillow — no ML model needed."""
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    data = img.getdata()
+    new_data = []
+    for r, g, b, a in data:
+        if r >= threshold and g >= threshold and b >= threshold:
+            new_data.append((r, g, b, 0))  # transparent
+        else:
+            new_data.append((r, g, b, a))
+    img.putdata(new_data)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 def _slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:60]
 
@@ -197,9 +214,9 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         out_dir = Path(tempfile.mkdtemp(prefix="autobot_designs_"))
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Remove background → transparent PNG
-    log.info("Removing background for %r", keyword)
-    transparent_bytes = remove(image_bytes)
+    # Remove white background → transparent PNG using Pillow flood fill
+    log.info("Removing white background for %r", keyword)
+    transparent_bytes = _remove_white_background(image_bytes)
 
     filename = f"{_slugify(keyword)}_{int(time.time())}.png"
     dest = out_dir / filename
