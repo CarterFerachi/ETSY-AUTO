@@ -56,10 +56,14 @@ async def _fetch_variants(blueprint_id: int, print_provider_id: int) -> list[dic
 
     filtered = []
     for v in all_variants:
-        options = {o["name"].lower(): o["value"].lower() for o in v.get("options", [])}
-        color = options.get("color", "")
-        size = options.get("size", "")
-        if color in _COMFORT_COLORS and size in _ENABLED_SIZES:
+        opts = v.get("options", [])
+        if opts and isinstance(opts[0], dict):
+            options = {o["name"].lower(): o["value"].lower() for o in opts}
+            color = options.get("color", "")
+            size = options.get("size", "")
+            if color in _COMFORT_COLORS and size in _ENABLED_SIZES:
+                filtered.append({"id": v["id"], "price": 0, "is_enabled": True})
+        else:
             filtered.append({"id": v["id"], "price": 0, "is_enabled": True})
 
     if not filtered:
