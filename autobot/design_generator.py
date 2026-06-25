@@ -146,12 +146,12 @@ _FALLBACK_PROMPT = (
 )
 
 
-def _remove_green_background(image_bytes: bytes, threshold: int = 40) -> bytes:
-    """Sample corner color and remove it — works on any solid background."""
+def _remove_green_background(image_bytes: bytes, threshold: int = 15) -> bytes:
+    """Sample corner color and remove only pixels very close to it."""
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
     w, h = img.size
 
-    # Sample the four corners to detect background color
+    # Sample corners to detect background color
     corners = [
         img.getpixel((0, 0))[:3],
         img.getpixel((w - 1, 0))[:3],
