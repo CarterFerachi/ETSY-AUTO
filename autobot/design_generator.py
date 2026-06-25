@@ -47,10 +47,11 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed text: 'DREAM TEAM' arched at top, 'OF 1776' below with stars."
     ),
     "ben drankin benjamin franklin fourth of july": (
-        "Vintage t-shirt graphic. Illustrated Benjamin Franklin wearing American flag "
-        "aviator sunglasses and a stars-and-stripes headband, holding up a glass of whiskey "
-        "with a wide grin. "
-        "Bold distressed varsity text: 'BEN' arched at top, 'DRANKIN' large at bottom with stars."
+        "Vintage t-shirt graphic. Caricature of Benjamin Franklin — bald on top with long wispy white hair "
+        "on the sides, round chubby face, double chin, big nose, wide grin. "
+        "Wearing American flag aviator sunglasses and a stars-and-stripes headband, "
+        "holding up a glass of whiskey triumphantly. "
+        "Bold distressed varsity text: 'BEN' arched at top in navy with stars, 'DRANKIN' large at bottom in red."
     ),
     "1776 national champs founding fathers": (
         "Vintage championship t-shirt graphic. Caricature illustration of five founding fathers "
