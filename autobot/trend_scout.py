@@ -51,6 +51,12 @@ _JULY4TH_POOL = [
     "party like its 1776",
     "1776 vibes only fourth of july",
     "mullet and fireworks fourth of july",
+    # Founding fathers viral style
+    "wtf is a kilometer bald eagle",
+    "dream team of 1776 founding fathers basketball",
+    "ben drankin benjamin franklin fourth of july",
+    "1776 national champs founding fathers",
+    "its only treason if you lose george washington",
 ]
 
 # Evergreen pool — used after July 4th passes

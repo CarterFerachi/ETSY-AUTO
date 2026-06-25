@@ -106,6 +106,42 @@ _CUSTOM_PROMPTS: dict[str, str] = {
         "Ultra-detailed fur, warm sunny lighting. Bold text 'MERICA' at bottom in distressed font. "
         "Pure white background. DTG t-shirt print ready."
     ),
+    "wtf is a kilometer bald eagle": (
+        "Detailed ink illustration of a bald eagle head with flowing white feathers styled like a colonial wig, "
+        "wearing red American flag wayfarer sunglasses with stars and stripes on the lenses. "
+        "Bold brush-stroke text below: 'WTF IS A' in navy blue and 'KILOMETER?' in red with a question mark. "
+        "Vintage engraving crosshatch style, high contrast black and white illustration with red and blue accents. "
+        "Pure white background. DTG t-shirt print ready."
+    ),
+    "dream team of 1776 founding fathers basketball": (
+        "Illustrated portrait of five founding fathers — George Washington, Benjamin Franklin, Thomas Jefferson, "
+        "John Adams, and Alexander Hamilton — dressed in USA Basketball jerseys (red white and blue). "
+        "Washington stands tall in the center, others posed confidently around him. "
+        "Bold text at bottom: 'DREAM TEAM' in large red letters and 'OF 1776' below with stars. "
+        "Vintage sports poster style, detailed illustration, navy blue background with red and white accents. "
+        "DTG t-shirt print ready."
+    ),
+    "ben drankin benjamin franklin fourth of july": (
+        "Vintage illustrated portrait of Benjamin Franklin wearing American flag aviator sunglasses and a red "
+        "stars-and-stripes headband, holding up a glass of whiskey with a grin. "
+        "Distressed American flag in the background. Bold text: 'BEN' at top and 'DRANKIN' below in large "
+        "white distressed varsity font with stars on either side. "
+        "Worn vintage patriotic style, red white and blue color palette. DTG t-shirt print ready."
+    ),
+    "1776 national champs founding fathers": (
+        "Illustrated group portrait of six founding fathers in colonial uniforms and suits, all wearing "
+        "cool black sunglasses, posed like a championship team photo. George Washington front and center. "
+        "Large bold collegiate text at top: '1776' and 'NATIONAL CHAMPS' in cream and gold. "
+        "Banner at bottom reading 'EST. 1776' with an eagle crest shield. "
+        "Slate blue vintage collegiate style, detailed illustration. DTG t-shirt print ready."
+    ),
+    "its only treason if you lose george washington": (
+        "Illustrated George Washington in full colonial military uniform and powdered wig, wearing aviator "
+        "sunglasses, walking confidently with fireworks exploding dramatically behind him. "
+        "Cinematic action-hero composition, vivid red white and blue fireworks. "
+        "Bold text at bottom: 'IT\\'S ONLY TREASON IF YOU LOSE' in clean white font. "
+        "Pure white background. DTG t-shirt print ready."
+    ),
 }
 
 _FALLBACK_PROMPT = (
