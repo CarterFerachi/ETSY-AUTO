@@ -19,10 +19,12 @@ _IDEOGRAM_BASE = "https://api.ideogram.ai"
 
 # Shared style suffix appended to every prompt
 _STYLE = (
-    " Vintage worn screen-print style. Limited color palette: navy blue, red, cream/off-white. "
+    " Vintage worn screen-print style. Exaggerated caricature illustration — big expressive faces, "
+    "bold outlines, slightly cartoonish but detailed. Each person must look distinctly different. "
+    "Limited color palette: navy blue, red, cream/off-white only. "
     "Aged ink texture, distressed halftone grain, slightly faded like a well-loved vintage tee. "
-    "NO bright colors, NO gradients, NO blue brushstroke backgrounds, NO drop shadows. "
-    "PURE WHITE (#FFFFFF) background only — no cream, no off-white, no grey."
+    "NO photorealism, NO gradients, NO drop shadows. "
+    "PURE WHITE (#FFFFFF) background only."
 )
 
 # ---------------------------------------------------------------------------
@@ -37,15 +39,12 @@ _PROMPTS: dict[str, str] = {
         "'KILOMETER?' large below in red. Crosshatch engraving style."
     ),
     "dream team of 1776 founding fathers basketball": (
-        "Vintage sports poster t-shirt graphic. Five distinctly different founding fathers "
-        "wearing USA Basketball jerseys, each with unique recognizable faces: "
-        "George Washington center with tall powdered wig and aviator sunglasses, "
-        "Benjamin Franklin left with wispy long hair and round Ben Franklin glasses, "
-        "Thomas Jefferson with reddish swept-back hair and cool shades, "
-        "Alexander Hamilton far right young and sharp-featured with dark sunglasses, "
-        "John Adams far left short stout round face with tinted glasses. "
-        "All five clearly different people, posed like a team photo. "
-        "Bold distressed text arched at top: 'DREAM TEAM', 'OF 1776' below with stars."
+        "Vintage sports poster t-shirt graphic. Caricature illustration of five wildly different founding fathers "
+        "in USA Basketball jerseys: Washington center with enormous tall powdered wig and aviator shades, "
+        "chubby round-faced Adams far left with tiny glasses, tall lanky red-haired Jefferson, "
+        "bald-on-top wispy-haired pot-bellied Franklin with bifocals, young sharp-jawed Hamilton far right. "
+        "Each face exaggerated and immediately distinct. Posed like a championship team photo. "
+        "Bold distressed text: 'DREAM TEAM' arched at top, 'OF 1776' below with stars."
     ),
     "ben drankin benjamin franklin fourth of july": (
         "Vintage t-shirt graphic. Illustrated Benjamin Franklin wearing American flag "
@@ -54,10 +53,10 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed varsity text: 'BEN' arched at top, 'DRANKIN' large at bottom with stars."
     ),
     "1776 national champs founding fathers": (
-        "Vintage championship t-shirt graphic. Five different founding fathers — "
-        "George Washington center, Benjamin Franklin, Thomas Jefferson, John Adams, Alexander Hamilton — "
-        "each with distinct faces and hairstyles, all wearing cool black sunglasses, "
-        "posed like a championship team photo. "
+        "Vintage championship t-shirt graphic. Caricature illustration of five founding fathers "
+        "all wearing black sunglasses: Washington center with massive tall wig, stern square jaw, "
+        "short round Adams far left, lanky red-haired Jefferson, pot-bellied bald Franklin with side hair, "
+        "young chiseled Hamilton far right. All wildly different body types and faces. "
         "Bold distressed collegiate text: '1776 NATIONAL CHAMPS' arched at top, 'FOUNDING FATHERS' at bottom with eagle."
     ),
     "its only treason if you lose george washington": (
@@ -71,8 +70,10 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed text at bottom: 'UNBOTHERED'."
     ),
     "founding fathers fourth of july squad goals": (
-        "Vintage t-shirt graphic. Group portrait of Washington, Franklin, Jefferson, Hamilton, and Adams "
-        "all wearing sunglasses, posed confidently like a modern friend squad. "
+        "Vintage t-shirt graphic. Caricature group portrait — Washington with huge tall wig and aviators, "
+        "tiny round Adams, giant-nosed Franklin with bifocals and wispy side hair, "
+        "tall red-haired Jefferson, young baby-faced Hamilton. All in colonial attire, all with different sunglasses, "
+        "posed like a modern squad selfie, confident and cool. "
         "Bold distressed text: 'SQUAD GOALS' arched at top, 'EST. 1776' at bottom with stars."
     ),
     "benjamin franklin original founding bro": (
@@ -81,12 +82,11 @@ _PROMPTS: dict[str, str] = {
         "NO name text anywhere. Bold distressed retro text: 'ORIGINAL FOUNDING BRO' at bottom. Stars accents."
     ),
     "1776 original bad boys founding fathers": (
-        "Vintage movie poster t-shirt graphic. Lineup of exactly five distinctly different founding fathers "
-        "side by side in colonial attire, each with a unique face and hairstyle: "
-        "George Washington with tall powdered wig, Benjamin Franklin with long wispy hair and round face, "
-        "Thomas Jefferson with reddish hair, Alexander Hamilton young and sharp-faced, "
-        "John Adams short and stout with a round face. All five wearing different style sunglasses, "
-        "tough serious expressions like an action movie poster. "
+        "Vintage movie poster t-shirt graphic. Caricature lineup of five founding fathers, "
+        "each wildly different: Washington center with enormous powdered wig and aviator shades, "
+        "tiny bowling-ball-headed Adams, lanky stretched-neck Jefferson with red hair, "
+        "pot-bellied bald-on-top Franklin with round bifocals, boyish-faced Hamilton. "
+        "All wearing different sunglasses, stone-cold tough expressions like an action movie. "
         "Bold distressed text: 'ORIGINAL BAD BOYS' at top, large '1776' at bottom."
     ),
     "we the people fourth of july founding fathers": (
@@ -122,8 +122,10 @@ _PROMPTS: dict[str, str] = {
         "Stars, stripes, eagle silhouette as accents."
     ),
     "party like its 1776": (
-        "Vintage t-shirt graphic. Founding fathers — Washington, Franklin, Jefferson — "
-        "with powdered wigs askew, holding drinks, celebrating wildly. Fun chaotic energy. "
+        "Vintage t-shirt graphic. Caricature of three founding fathers partying wildly — "
+        "Washington with his massive wig tilted sideways holding a beer, "
+        "pot-bellied Franklin with bifocals askew raising a whiskey glass, "
+        "tall lanky red-haired Jefferson dancing. All with huge grins and exaggerated expressions. "
         "Bold distressed handwritten text at bottom: 'PARTY LIKE IT\\'S 1776'."
     ),
     "its only treason if you lose": (
