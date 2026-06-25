@@ -22,6 +22,7 @@ class Settings:
     printful_api_key: str = os.getenv("PRINTFUL_API_KEY", "")
     printful_store_id: str = os.getenv("PRINTFUL_STORE_ID", "18378139")
     imgbb_api_key: str = os.getenv("IMGBB_API_KEY", "")
+    dynamic_mockups_api_key: str = os.getenv("DYNAMIC_MOCKUPS_API_KEY", "")
 
     etsy_api_key: str = os.getenv("ETSY_API_KEY", "")
     etsy_api_secret: str = os.getenv("ETSY_API_SECRET", "")

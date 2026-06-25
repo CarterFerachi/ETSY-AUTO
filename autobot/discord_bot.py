@@ -97,7 +97,7 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     # Lazy import to avoid circular deps
     from .pipeline import _make_title, _make_description, _make_tags
     from .printify_agent import create_product, publish_product, upload_image
-    from .higgsfield_agent import generate_mockup
+    from .dynamic_mockups import generate_lifestyle_mockup
     from .config import get_settings
 
     settings = get_settings()
@@ -130,24 +130,20 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     tmp = Path(tempfile.mkdtemp()) / f"drop_{msg_id}.png"
     tmp.write_bytes(dl.content)
 
-    mockup_tmp: Path | None = None
     try:
         image_id, design_preview_url = await upload_image(tmp)
         title = _make_title(keyword)
         description = _make_description(keyword)
         tags = _make_tags(keyword)
 
-        # Generate lifestyle mockup if Higgsfield is configured
-        # Use Printify preview URL if available, otherwise fall back to Discord CDN URL
+        # Generate lifestyle mockup via Dynamic Mockups
         public_design_url = design_preview_url or image_url
         mockup_url: str | None = None
-        if settings.higgsfield_api_key and public_design_url:
+        if settings.dynamic_mockups_api_key and public_design_url:
             try:
-                log.info("Generating lifestyle mockup for %r via %s…", keyword, public_design_url)
-                mockup_tmp = await generate_mockup(public_design_url)
-                from .imgbb import upload_to_imgbb
-                mockup_url = await upload_to_imgbb(mockup_tmp)
-                log.info("Lifestyle mockup URL: %s", mockup_url)
+                log.info("Generating lifestyle mockup for %r…", keyword)
+                mockup_url = await generate_lifestyle_mockup(public_design_url)
+                log.info("Lifestyle mockup ready: %s", mockup_url)
             except Exception:
                 log.exception("Mockup generation failed — continuing without it")
 
@@ -180,8 +176,6 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
             )
     finally:
         tmp.unlink(missing_ok=True)
-        if mockup_tmp:
-            mockup_tmp.unlink(missing_ok=True)
 
 
 async def _poll_owner_drops(channel_id: str, token: str, owner_id: str) -> None:
