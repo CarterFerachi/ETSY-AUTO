@@ -28,21 +28,50 @@ def _headers() -> dict[str, str]:
     }
 
 
+async def _find_product_uuid(client: httpx.AsyncClient, query: str) -> str | None:
+    """Search Dynamic Mockups POD catalog for a product UUID."""
+    r = await client.get(
+        f"{_BASE}/mock-anything/products",
+        headers=_headers(),
+        params={"query": query},
+        timeout=30,
+    )
+    r.raise_for_status()
+    items = r.json().get("data", [])
+    if items:
+        log.info("Dynamic Mockups product match: %s → %s", items[0]["name"], items[0]["uuid"])
+        return items[0]["uuid"]
+    return None
+
+
 async def _create_template(client: httpx.AsyncClient) -> tuple[str, str]:
     """Generate a blank lifestyle shirt template. Returns (mockup_uuid, smart_object_uuid)."""
     log.info("Dynamic Mockups: generating lifestyle template…")
+
+    # Try to ground the generation with a specific t-shirt product
+    product_uuid = await _find_product_uuid(client, "comfort wash garment dyed t-shirt")
+    if not product_uuid:
+        product_uuid = await _find_product_uuid(client, "unisex t-shirt")
+
+    payload: dict = {
+        "prompt": (
+            "Male model with tattoos wearing a plain white crew-neck t-shirt. "
+            "Patriotic American flag bokeh background with fireworks. "
+            "Waist-up shot, confident relaxed pose, slight smirk. "
+            "Professional Etsy product photography, high contrast, vibrant colors."
+        ),
+        "model": "seedream_4_5",
+    }
+    if product_uuid:
+        payload["product"] = {
+            "uuid": product_uuid,
+            "decorations": [{"location": "front_full_chest"}],
+        }
+
     r = await client.post(
         f"{_BASE}/mock-anything/create",
         headers=_headers(),
-        json={
-            "prompt": (
-                "Male model with tattoos wearing a plain white crew-neck t-shirt. "
-                "Patriotic American flag bokeh background with fireworks. "
-                "Waist-up shot, confident relaxed pose, slight smirk. "
-                "Professional Etsy product photography, high contrast, vibrant colors."
-            ),
-            "model": "seedream_4_5",
-        },
+        json=payload,
         timeout=30,
     )
     if not r.is_success:
@@ -66,8 +95,14 @@ async def _create_template(client: httpx.AsyncClient) -> tuple[str, str]:
         if state == "SUCCESS":
             mockup = data["mockup"]
             mockup_uuid: str = mockup["uuid"]
-            smart_object_uuid: str = mockup["smart_objects"][0]["uuid"]
-            log.info("Template ready: mockup=%s smart_object=%s", mockup_uuid, smart_object_uuid)
+            smart_objects = mockup.get("smart_objects", [])
+            log.info("Template ready: mockup=%s smart_objects=%d", mockup_uuid, len(smart_objects))
+            if not smart_objects:
+                raise RuntimeError(
+                    f"Dynamic Mockups template {mockup_uuid} has no smart objects — "
+                    f"image_url={data.get('image_url')}"
+                )
+            smart_object_uuid: str = smart_objects[0]["uuid"]
             return mockup_uuid, smart_object_uuid
         if state not in ("PROGRESS", "PENDING"):
             raise RuntimeError(f"Dynamic Mockups template failed: state={state}, data={data}")
