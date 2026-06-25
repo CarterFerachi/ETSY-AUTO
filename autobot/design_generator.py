@@ -76,8 +76,12 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed retro text at bottom: 'ORIGINAL FOUNDING BRO'. Stars accents."
     ),
     "1776 original bad boys founding fathers": (
-        "Vintage movie poster t-shirt graphic. Lineup of five founding fathers in colonial attire "
-        "all wearing sunglasses, tough serious expressions like an action movie poster. "
+        "Vintage movie poster t-shirt graphic. Lineup of exactly five distinctly different founding fathers "
+        "side by side in colonial attire, each with a unique face and hairstyle: "
+        "George Washington with tall powdered wig, Benjamin Franklin with long wispy hair and round face, "
+        "Thomas Jefferson with reddish hair, Alexander Hamilton young and sharp-faced, "
+        "John Adams short and stout with a round face. All five wearing different style sunglasses, "
+        "tough serious expressions like an action movie poster. "
         "Bold distressed text: 'ORIGINAL BAD BOYS' at top, large '1776' at bottom."
     ),
     "we the people fourth of july founding fathers": (
