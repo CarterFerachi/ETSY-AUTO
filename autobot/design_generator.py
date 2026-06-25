@@ -37,9 +37,14 @@ _PROMPTS: dict[str, str] = {
         "'KILOMETER?' large below in red. Crosshatch engraving style."
     ),
     "dream team of 1776 founding fathers basketball": (
-        "Vintage sports poster t-shirt graphic. Illustrated portrait of five founding fathers — "
-        "George Washington center, Benjamin Franklin, Thomas Jefferson, John Adams, Alexander Hamilton — "
-        "wearing USA Basketball jerseys. "
+        "Vintage sports poster t-shirt graphic. Five distinctly different founding fathers "
+        "wearing USA Basketball jerseys, each with unique recognizable faces: "
+        "George Washington center with tall powdered wig and aviator sunglasses, "
+        "Benjamin Franklin left with wispy long hair and round Ben Franklin glasses, "
+        "Thomas Jefferson with reddish swept-back hair and cool shades, "
+        "Alexander Hamilton far right young and sharp-featured with dark sunglasses, "
+        "John Adams far left short stout round face with tinted glasses. "
+        "All five clearly different people, posed like a team photo. "
         "Bold distressed text arched at top: 'DREAM TEAM', 'OF 1776' below with stars."
     ),
     "ben drankin benjamin franklin fourth of july": (
