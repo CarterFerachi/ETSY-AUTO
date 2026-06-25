@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-import discord
+import nextcord as discord
 
 from .config import get_settings
 from .discord_approval import mark_rejected
