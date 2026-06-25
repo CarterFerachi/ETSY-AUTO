@@ -207,14 +207,26 @@ _DESIGN_TEXT: dict[str, dict] = {
 
 
 def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    for name in ("Anton-Regular.ttf", "Oswald-Bold.ttf"):
-        path = _FONTS_DIR / name
+    # Try bundled fonts first, then system fonts, then Pillow built-in
+    search = [
+        _FONTS_DIR / "Anton-Regular.ttf",
+        _FONTS_DIR / "Oswald-Bold.ttf",
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+        Path("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"),
+    ]
+    for path in search:
         if path.exists():
             try:
-                return ImageFont.truetype(str(path), size)
-            except Exception:
-                pass
-    return ImageFont.load_default()
+                font = ImageFont.truetype(str(path), size)
+                log.info("Loaded font: %s @ %dpx", path.name, size)
+                return font
+            except Exception as e:
+                log.warning("Failed to load font %s: %s", path, e)
+    # Pillow 10+ supports size on load_default
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:
+        return ImageFont.load_default()
 
 
 def _text_size(draw: ImageDraw.ImageDraw, text: str, font) -> tuple[int, int]:
