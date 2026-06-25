@@ -19,8 +19,13 @@ _RECRAFT_BASE = "https://external.api.recraft.ai/v1"
 _FONTS_DIR = Path("/app/fonts")
 _FALLBACK_FONT = None  # PIL built-in
 
+# Appended to every art prompt — Recraft must not render any text
+_NO_TEXT = (
+    " NO text, NO words, NO letters, NO numbers, NO typography, NO captions anywhere in the image."
+)
+
 # ---------------------------------------------------------------------------
-# Art prompts — NO text instructions, pure visual art only
+# Art prompts — pure visual art only, text added by Pillow afterward
 # ---------------------------------------------------------------------------
 _ART_PROMPTS: dict[str, str] = {
     "wtf is a kilometer bald eagle": (
@@ -294,7 +299,7 @@ def _slugify(text: str) -> str:
 async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
     """Generate design via Recraft, overlay text with Pillow, save transparent PNG."""
     settings = get_settings()
-    prompt = _ART_PROMPTS.get(keyword) or _FALLBACK_ART_PROMPT.format(theme=keyword)
+    prompt = (_ART_PROMPTS.get(keyword) or _FALLBACK_ART_PROMPT.format(theme=keyword)) + _NO_TEXT
     log.info("Generating design for %r via Recraft", keyword)
 
     async with httpx.AsyncClient(timeout=120) as client:
