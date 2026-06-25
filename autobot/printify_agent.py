@@ -22,10 +22,10 @@ log = logging.getLogger(__name__)
 
 _BASE = "https://api.printify.com/v1"
 
-# Comfort Colors colors to enable (lowercase match against Printify color labels)
-_COMFORT_COLORS = {
-    "white", "ivory", "pepper", "blue jean", "seafoam",
-    "butter", "moss", "crimson", "grey", "washed denim",
+# Colors to enable (lowercase match against Printify color labels)
+_ENABLED_COLORS = {
+    "white", "black", "navy", "navy blue", "grey", "gray",
+    "heather grey", "heather gray", "dark grey", "dark gray",
 }
 
 # Sizes to enable
@@ -56,10 +56,23 @@ async def _fetch_variants(blueprint_id: int, print_provider_id: int) -> list[dic
 
     filtered = []
     for v in all_variants:
-        filtered.append({"id": v["id"], "price": 0, "is_enabled": True})
+        opts = v.get("options", {})
+        if isinstance(opts, dict):
+            color = opts.get("color", "").lower()
+            size = opts.get("size", "").lower()
+        elif isinstance(opts, list) and opts and isinstance(opts[0], dict):
+            opt_map = {o["name"].lower(): o["value"].lower() for o in opts}
+            color = opt_map.get("color", "")
+            size = opt_map.get("size", "")
+        else:
+            color, size = "", ""
+
+        color_match = not color or any(c in color for c in _ENABLED_COLORS)
+        size_match = not size or size in _ENABLED_SIZES
+        if color_match and size_match:
+            filtered.append({"id": v["id"], "price": 0, "is_enabled": True})
 
     if not filtered:
-        # Fallback: enable all variants if filter matched nothing
         log.warning("Color/size filter matched 0 variants — enabling all %d", len(all_variants))
         filtered = [{"id": v["id"], "price": 0, "is_enabled": True} for v in all_variants]
 
