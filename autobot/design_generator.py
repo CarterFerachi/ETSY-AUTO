@@ -9,6 +9,9 @@ import time
 from pathlib import Path
 
 from openai import AsyncOpenAI
+from rembg import remove
+from PIL import Image
+import io
 
 from .config import get_settings
 
@@ -151,8 +154,12 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         out_dir = Path(tempfile.mkdtemp(prefix="autobot_designs_"))
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Remove background → transparent PNG
+    log.info("Removing background for %r", keyword)
+    transparent_bytes = remove(image_bytes)
+
     filename = f"{_slugify(keyword)}_{int(time.time())}.png"
     dest = out_dir / filename
-    dest.write_bytes(image_bytes)
-    log.info("Design saved → %s", dest)
+    dest.write_bytes(transparent_bytes)
+    log.info("Design saved (transparent) → %s", dest)
     return dest
