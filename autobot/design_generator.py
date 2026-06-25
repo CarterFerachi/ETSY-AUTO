@@ -100,9 +100,10 @@ _PROMPTS: dict[str, str] = {
         "Classic Americana stamp style, aged ink texture."
     ),
     "patrick henry give me liberty or give me coffee": (
-        "Vintage t-shirt graphic. Illustrated Patrick Henry at a podium, dramatic pointing finger, "
-        "holding a coffee cup instead of a torch. "
-        "Bold distressed vintage text: 'GIVE ME LIBERTY' at top, 'OR GIVE ME COFFEE' at bottom."
+        "Vintage t-shirt graphic. Clean detailed illustration of a colonial-era statesman "
+        "with a sharp well-defined face, powdered wig, holding up a modern coffee cup triumphantly. "
+        "Clear facial features, not distorted. Red circle behind the figure. "
+        "Bold distressed vintage text: 'GIVE ME LIBERTY' at top, 'OR GIVE ME COFFEE' at bottom, 'COFFEE' largest in red."
     ),
     "george washington first in war first in peace first in swag": (
         "Vintage t-shirt graphic. Bold portrait of George Washington in colonial uniform "
