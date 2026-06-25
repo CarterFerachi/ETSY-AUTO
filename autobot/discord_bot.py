@@ -10,7 +10,7 @@ import logging
 import httpx
 
 from .config import get_settings
-from .discord_approval import mark_rejected
+from .discord_approval import mark_approved, mark_rejected
 
 log = logging.getLogger(__name__)
 
@@ -19,26 +19,40 @@ _running = False
 
 
 async def _poll_reactions(message_id: str, channel_id: str, token: str) -> None:
-    """Poll until ❌ reaction found or message_id removed from tracking."""
+    """Poll for ✅ (approve) or ❌ (reject) reactions every 15 seconds."""
     headers = {"Authorization": f"Bot {token}"}
-    url = f"{_DISCORD_API}/channels/{channel_id}/messages/{message_id}/reactions/%E2%9D%8C"
+    base = f"{_DISCORD_API}/channels/{channel_id}/messages/{message_id}/reactions"
+    approve_url = f"{base}/%E2%9C%85"  # ✅
+    reject_url = f"{base}/%E2%9D%8C"   # ❌
 
     async with httpx.AsyncClient(timeout=15) as client:
         while _running:
             try:
-                r = await client.get(url, headers=headers)
+                # Check ✅ first
+                r = await client.get(approve_url, headers=headers)
                 if r.is_success:
-                    users = r.json()
-                    # Filter out the bot itself
-                    non_bot = [u for u in users if not u.get("bot")]
+                    non_bot = [u for u in r.json() if not u.get("bot")]
                     if non_bot:
-                        mark_rejected(message_id)
-                        log.info("❌ reaction detected on message %s", message_id)
-                        # Post confirmation
+                        mark_approved(message_id)
+                        log.info("✅ reaction detected on message %s — instant approve", message_id)
                         await client.post(
                             f"{_DISCORD_API}/channels/{channel_id}/messages",
                             headers={**headers, "Content-Type": "application/json"},
-                            json={"content": f"🚫 Design rejected — skipping this listing."},
+                            json={"content": "✅ Design approved — publishing to Etsy now!"},
+                        )
+                        return
+
+                # Check ❌
+                r = await client.get(reject_url, headers=headers)
+                if r.is_success:
+                    non_bot = [u for u in r.json() if not u.get("bot")]
+                    if non_bot:
+                        mark_rejected(message_id)
+                        log.info("❌ reaction detected on message %s — rejected", message_id)
+                        await client.post(
+                            f"{_DISCORD_API}/channels/{channel_id}/messages",
+                            headers={**headers, "Content-Type": "application/json"},
+                            json={"content": "🚫 Design rejected — skipping this listing."},
                         )
                         return
             except Exception as exc:
