@@ -235,56 +235,59 @@ def _text_size(draw: ImageDraw.ImageDraw, text: str, font) -> tuple[int, int]:
 
 
 def _overlay_text(image_bytes: bytes, keyword: str) -> bytes:
-    """Draw text on the design using Pillow."""
+    """Expand canvas and draw text above/below the art — art is never cropped."""
     text_cfg = _DESIGN_TEXT.get(keyword)
     if not text_cfg:
         return image_bytes
 
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
-    w, h = img.size
-    draw = ImageDraw.Draw(img)
+    art = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    w, h = art.size
 
     top_text = text_cfg.get("top", "")
     bottom_text = text_cfg.get("bottom", "")
     style = text_cfg.get("style", "bottom_only")
 
-    margin = int(h * 0.04)
-    band_height = int(h * 0.11)
+    band_h = int(h * 0.14)
+    has_top = style in ("top_bottom", "top_only") and top_text
+    has_bottom = style in ("top_bottom", "bottom_only") and bottom_text
 
-    def draw_text_band(text: str, y: int, bg_color: tuple, text_color: tuple):
-        font_size = int(band_height * 0.6)
+    total_h = h + (band_h if has_top else 0) + (band_h if has_bottom else 0)
+    canvas = Image.new("RGBA", (w, total_h), (255, 255, 255, 0))
+
+    art_y = band_h if has_top else 0
+    canvas.paste(art, (0, art_y))
+
+    draw = ImageDraw.Draw(canvas)
+    navy = (15, 35, 90, 255)
+    red = (180, 20, 20, 255)
+    white = (255, 255, 255, 255)
+
+    def draw_band(text: str, y: int, bg: tuple):
+        # Fill band
+        draw.rectangle([(0, y), (w, y + band_h)], fill=bg)
+
+        font_size = int(band_h * 0.55)
         font = _load_font(font_size)
         tw, th = _text_size(draw, text, font)
-        # Shrink font if text too wide
-        while tw > w * 0.9 and font_size > 12:
+        while tw > w * 0.88 and font_size > 14:
             font_size -= 2
             font = _load_font(font_size)
             tw, th = _text_size(draw, text, font)
 
-        # Draw semi-transparent band
-        band = Image.new("RGBA", (w, band_height + margin * 2), bg_color)
-        img.paste(band, (0, y), band)
-
-        # Draw text centered with shadow
         tx = (w - tw) // 2
-        ty = y + (band_height + margin * 2 - th) // 2
+        ty = y + (band_h - th) // 2
         # Shadow
-        draw.text((tx + 3, ty + 3), text, font=font, fill=(0, 0, 0, 180))
-        # Main text
-        draw.text((tx, ty), text, font=font, fill=text_color)
+        draw.text((tx + 2, ty + 2), text, font=font, fill=(0, 0, 0, 160))
+        # Text
+        draw.text((tx, ty), text, font=font, fill=white)
 
-    navy = (15, 35, 90, 220)
-    red = (180, 20, 20, 220)
-    white = (255, 255, 255, 255)
-
-    if style in ("top_bottom", "top_only") and top_text:
-        draw_text_band(top_text, 0, navy, white)
-
-    if style in ("top_bottom", "bottom_only") and bottom_text:
-        draw_text_band(bottom_text, h - band_height - margin * 2, red, white)
+    if has_top:
+        draw_band(top_text, 0, navy)
+    if has_bottom:
+        draw_band(bottom_text, art_y + h, red)
 
     buf = io.BytesIO()
-    img.save(buf, format="PNG")
+    canvas.save(buf, format="PNG")
     return buf.getvalue()
 
 
