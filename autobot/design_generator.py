@@ -76,9 +76,9 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed text: 'SQUAD GOALS' arched at top, 'EST. 1776' at bottom with stars."
     ),
     "benjamin franklin original founding bro": (
-        "Vintage t-shirt graphic. Portrait of Benjamin Franklin looking cool and confident "
-        "wearing sunglasses, lightning bolt striking in background. "
-        "Bold distressed retro text at bottom: 'ORIGINAL FOUNDING BRO'. Stars accents."
+        "Vintage t-shirt graphic. Portrait of a colonial-era statesman with wispy long grey hair "
+        "and round spectacles, wearing cool sunglasses, lightning bolt striking dramatically behind him. "
+        "NO name text anywhere. Bold distressed retro text: 'ORIGINAL FOUNDING BRO' at bottom. Stars accents."
     ),
     "1776 original bad boys founding fathers": (
         "Vintage movie poster t-shirt graphic. Lineup of exactly five distinctly different founding fathers "
@@ -139,13 +139,25 @@ _FALLBACK_PROMPT = (
 )
 
 
-def _remove_white_background(image_bytes: bytes, threshold: int = 220) -> bytes:
-    """Replace near-white and cream pixels with transparency."""
+def _remove_white_background(image_bytes: bytes, threshold: int = 30) -> bytes:
+    """Flood-fill from all four corners to remove background color."""
+    from PIL import ImageDraw
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    w, h = img.size
+
+    # Sample background color from corners
+    corners = [img.getpixel((0, 0)), img.getpixel((w-1, 0)),
+               img.getpixel((0, h-1)), img.getpixel((w-1, h-1))]
+    bg_r = int(sum(c[0] for c in corners) / 4)
+    bg_g = int(sum(c[1] for c in corners) / 4)
+    bg_b = int(sum(c[2] for c in corners) / 4)
+
     data = img.getdata()
     new_data = []
     for r, g, b, a in data:
-        if r >= threshold and g >= threshold and b >= threshold:
+        if (abs(r - bg_r) <= threshold and
+                abs(g - bg_g) <= threshold and
+                abs(b - bg_b) <= threshold):
             new_data.append((r, g, b, 0))
         else:
             new_data.append((r, g, b, a))
