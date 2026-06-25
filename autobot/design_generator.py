@@ -1,4 +1,4 @@
-"""Generate t-shirt artwork via Ideogram v2 with text baked in."""
+"""Generate t-shirt artwork — Higgsfield (primary) or Ideogram v2 (fallback)."""
 from __future__ import annotations
 
 import logging
@@ -12,6 +12,7 @@ import httpx
 from PIL import Image
 
 from .config import get_settings
+from .higgsfield_agent import generate_and_remove_bg as _higgsfield_generate
 
 log = logging.getLogger(__name__)
 
@@ -282,11 +283,16 @@ def _slugify(text: str) -> str:
 
 
 async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
-    """Generate design via Ideogram v2 with text baked in, save transparent PNG."""
+    """Generate design — Higgsfield if key set, else Ideogram v2 fallback."""
     settings = get_settings()
     base = _PROMPTS.get(keyword) or _FALLBACK_PROMPT.format(theme=keyword)
     prompt = base + _STYLE
-    log.info("Generating design for %r via Ideogram v2", keyword)
+
+    if settings.higgsfield_api_key:
+        log.info("Generating design for %r via Higgsfield", keyword)
+        return await _higgsfield_generate(prompt, out_dir=out_dir)
+
+    log.info("Generating design for %r via Ideogram v2 (no Higgsfield key)", keyword)
 
     async with httpx.AsyncClient(timeout=120) as client:
         r = await client.post(
