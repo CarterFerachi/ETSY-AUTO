@@ -137,12 +137,14 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
         description = _make_description(keyword)
         tags = _make_tags(keyword)
 
-        # Generate lifestyle mockup if Higgsfield is configured and we have a public design URL
+        # Generate lifestyle mockup if Higgsfield is configured
+        # Use Printify preview URL if available, otherwise fall back to Discord CDN URL
+        public_design_url = design_preview_url or image_url
         mockup_url: str | None = None
-        if settings.higgsfield_api_key and design_preview_url:
+        if settings.higgsfield_api_key and public_design_url:
             try:
-                log.info("Generating lifestyle mockup for %r…", keyword)
-                mockup_tmp = await generate_mockup(design_preview_url)
+                log.info("Generating lifestyle mockup for %r via %s…", keyword, public_design_url)
+                mockup_tmp = await generate_mockup(public_design_url)
                 from .imgbb import upload_to_imgbb
                 mockup_url = await upload_to_imgbb(mockup_tmp)
                 log.info("Lifestyle mockup URL: %s", mockup_url)
