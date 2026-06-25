@@ -153,7 +153,7 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
             image_id=image_id,
             tags=tags,
             retail_price_cents=int(settings.base_price_usd * 100),
-            mockup_url=mockup_url or None,
+            mockup_url=mockup_url,
         )
 
         await publish_product(product_id)

@@ -175,6 +175,26 @@ async def create_product(
     return product_id
 
 
+async def get_product_mockup_url(product_id: str) -> str | None:
+    """Return the first auto-generated mockup image URL for a Printify product."""
+    settings = get_settings()
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.get(
+            f"{_BASE}/shops/{settings.printify_shop_id}/products/{product_id}.json",
+            headers=_headers(),
+        )
+        if not r.is_success:
+            log.warning("Could not fetch product %s for mockup URL: %s", product_id, r.status_code)
+            return None
+    images = r.json().get("images", [])
+    for img in images:
+        src = img.get("src", "")
+        if src:
+            log.info("Printify auto-mockup for %s: %s", product_id, src)
+            return src
+    return None
+
+
 async def add_lifestyle_image(product_id: str, image_url: str) -> None:
     """Add a lifestyle mockup image URL to an existing Printify product."""
     settings = get_settings()
