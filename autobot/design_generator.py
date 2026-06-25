@@ -24,7 +24,7 @@ _STYLE = (
     "Limited color palette: navy blue, red, cream/off-white only. "
     "Aged ink texture, distressed halftone grain, slightly faded like a well-loved vintage tee. "
     "NO photorealism, NO gradients, NO drop shadows. "
-    "NEON GREEN (#00FF00) solid background only — no other background color."
+    "SOLID WHITE (#FFFFFF) background only."
 )
 
 # ---------------------------------------------------------------------------
@@ -144,14 +144,27 @@ _FALLBACK_PROMPT = (
 )
 
 
-def _remove_green_background(image_bytes: bytes, threshold: int = 60) -> bytes:
-    """Remove neon green (#00FF00) chroma key background."""
+def _remove_green_background(image_bytes: bytes, threshold: int = 40) -> bytes:
+    """Sample corner color and remove it — works on any solid background."""
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    w, h = img.size
+
+    # Sample the four corners to detect background color
+    corners = [
+        img.getpixel((0, 0))[:3],
+        img.getpixel((w - 1, 0))[:3],
+        img.getpixel((0, h - 1))[:3],
+        img.getpixel((w - 1, h - 1))[:3],
+    ]
+    bg_r = int(sum(c[0] for c in corners) / 4)
+    bg_g = int(sum(c[1] for c in corners) / 4)
+    bg_b = int(sum(c[2] for c in corners) / 4)
+    log.info("Detected background color: rgb(%d,%d,%d)", bg_r, bg_g, bg_b)
+
     data = img.getdata()
     new_data = []
     for r, g, b, a in data:
-        # Neon green: high green, low red, low blue
-        if g > 180 and r < 100 and b < 100:
+        if abs(r - bg_r) <= threshold and abs(g - bg_g) <= threshold and abs(b - bg_b) <= threshold:
             new_data.append((r, g, b, 0))
         else:
             new_data.append((r, g, b, a))
@@ -205,7 +218,7 @@ async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
         out_dir = Path(tempfile.mkdtemp(prefix="autobot_designs_"))
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    log.info("Removing green background for %r", keyword)
+    log.info("Removing background for %r", keyword)
     transparent_bytes = _remove_green_background(image_bytes)
 
     filename = f"{_slugify(keyword)}_{int(time.time())}.png"
