@@ -17,122 +17,115 @@ log = logging.getLogger(__name__)
 
 _IDEOGRAM_BASE = "https://api.ideogram.ai"
 
+# Shared style suffix appended to every prompt
+_STYLE = (
+    " Vintage worn screen-print style. Limited color palette: navy blue, red, cream/off-white. "
+    "Aged ink texture, distressed halftone grain, slightly faded like a well-loved vintage tee. "
+    "NO bright colors, NO gradients, NO blue brushstroke backgrounds, NO drop shadows. "
+    "Pure white background. DTG print ready."
+)
+
 # ---------------------------------------------------------------------------
-# Full prompts — art + text instructions together, let Ideogram handle it
+# Prompts — art + text, style applied via _STYLE suffix
 # ---------------------------------------------------------------------------
 _PROMPTS: dict[str, str] = {
     "wtf is a kilometer bald eagle": (
-        "Vintage t-shirt graphic design. Detailed ink illustration of a bald eagle head "
+        "Vintage t-shirt graphic. Detailed ink illustration of a bald eagle head "
         "with flowing white feathers styled like a colonial wig, wearing red American flag "
-        "wayfarer sunglasses. Bold distressed vintage brush-stroke text: 'WTF IS A' at top in navy blue, "
-        "'KILOMETER?' below in red. Vintage engraving crosshatch style, high contrast "
-        "black and white with red and blue accents. Pure white background. DTG print ready."
+        "wayfarer sunglasses with stars on the lenses. "
+        "Bold distressed varsity text 'WTF IS A' arched at top in navy, "
+        "'KILOMETER?' large below in red. Crosshatch engraving style."
     ),
     "dream team of 1776 founding fathers basketball": (
         "Vintage sports poster t-shirt graphic. Illustrated portrait of five founding fathers — "
         "George Washington center, Benjamin Franklin, Thomas Jefferson, John Adams, Alexander Hamilton — "
-        "wearing USA Basketball jerseys in red white blue. Bold distressed vintage text at top: 'DREAM TEAM' in large "
-        "red letters, 'OF 1776' below with stars. Pure white background. DTG print ready."
+        "wearing USA Basketball jerseys. "
+        "Bold distressed text arched at top: 'DREAM TEAM', 'OF 1776' below with stars."
     ),
     "ben drankin benjamin franklin fourth of july": (
-        "Vintage t-shirt graphic. Illustrated portrait of Benjamin Franklin wearing American flag "
-        "aviator sunglasses and a red stars-and-stripes headband, holding up a glass of whiskey "
-        "with a wide grin. Distressed American flag in background. Bold distressed varsity vintage text: 'BEN' at top, "
-        "'DRANKIN' large below in white distressed font with stars. Red white and blue. "
-        "Pure white background. DTG print ready."
+        "Vintage t-shirt graphic. Illustrated Benjamin Franklin wearing American flag "
+        "aviator sunglasses and a stars-and-stripes headband, holding up a glass of whiskey "
+        "with a wide grin. "
+        "Bold distressed varsity text: 'BEN' arched at top, 'DRANKIN' large at bottom with stars."
     ),
     "1776 national champs founding fathers": (
-        "Vintage championship poster t-shirt graphic. Group of six founding fathers in colonial "
-        "uniforms all wearing cool black sunglasses, posed like a championship team photo. "
-        "George Washington front and center. Bold distressed collegiate vintage text at top: '1776 NATIONAL CHAMPS' "
-        "in cream and gold. Banner at bottom: 'EST. 1776' with eagle crest. Slate blue vintage style. "
-        "Pure white background. DTG print ready."
+        "Vintage championship t-shirt graphic. Six founding fathers in colonial uniforms "
+        "all wearing cool black sunglasses, posed like a championship team photo. "
+        "George Washington front and center. "
+        "Bold distressed collegiate text: '1776 NATIONAL CHAMPS' arched at top, 'EST. 1776' at bottom with eagle crest."
     ),
     "its only treason if you lose george washington": (
         "Vintage t-shirt graphic. George Washington in colonial military uniform, wearing aviator "
-        "sunglasses, striding confidently with fireworks exploding behind him. Action hero composition. "
-        "Bold distressed vintage text at bottom: 'IT'S ONLY TREASON IF YOU LOSE' in white. "
-        "Pure white background. DTG print ready."
+        "sunglasses, striding confidently with fireworks bursting behind him. Action hero pose. "
+        "Bold distressed text at bottom: 'IT\\'S ONLY TREASON IF YOU LOSE'."
     ),
     "george washington crossing the delaware sunglasses": (
-        "Dramatic vintage t-shirt graphic. George Washington standing boldly at the front of a boat "
-        "crossing a river, wearing aviator sunglasses, American flag waving behind him. "
-        "Epic cinematic composition, red white and blue. Bold distressed vintage text at bottom: 'UNBOTHERED' in white. "
-        "Pure white background. DTG print ready."
+        "Vintage t-shirt graphic. George Washington standing boldly at the front of a rowboat "
+        "crossing an icy river, wearing aviator sunglasses, flag waving dramatically behind him. "
+        "Bold distressed text at bottom: 'UNBOTHERED'."
     ),
     "founding fathers fourth of july squad goals": (
         "Vintage t-shirt graphic. Group portrait of Washington, Franklin, Jefferson, Hamilton, and Adams "
-        "all wearing sunglasses, posed like a modern friend squad photo. Confident casual energy. "
-        "Bold distressed vintage aged text: 'SQUAD GOALS' at top, 'EST. 1776' at bottom with stars. "
-        "Red white and blue vintage style. Pure white background. DTG print ready."
+        "all wearing sunglasses, posed confidently like a modern friend squad. "
+        "Bold distressed text: 'SQUAD GOALS' arched at top, 'EST. 1776' at bottom with stars."
     ),
     "benjamin franklin original founding bro": (
-        "Vintage t-shirt graphic. Portrait of Benjamin Franklin looking cool and confident, "
-        "wearing sunglasses, lightning bolt in background. Bold distressed retro vintage text: "
-        "'ORIGINAL FOUNDING BRO' below portrait. Stars and stripes accents. "
-        "Pure white background. DTG print ready."
+        "Vintage t-shirt graphic. Portrait of Benjamin Franklin looking cool and confident "
+        "wearing sunglasses, lightning bolt striking in background. "
+        "Bold distressed retro text at bottom: 'ORIGINAL FOUNDING BRO'. Stars accents."
     ),
     "1776 original bad boys founding fathers": (
-        "Movie poster style vintage t-shirt graphic. Lineup of five founding fathers in colonial attire "
-        "all wearing sunglasses, tough serious expressions like a police lineup or action movie poster. "
-        "Bold distressed vintage text at top: 'ORIGINAL BAD BOYS', large '1776' at bottom in vintage font. "
-        "High contrast red white and blue. Pure white background. DTG print ready."
+        "Vintage movie poster t-shirt graphic. Lineup of five founding fathers in colonial attire "
+        "all wearing sunglasses, tough serious expressions like an action movie poster. "
+        "Bold distressed text: 'ORIGINAL BAD BOYS' at top, large '1776' at bottom."
     ),
     "we the people fourth of july founding fathers": (
-        "Bold typographic vintage t-shirt design. Large distressed varsity text 'WE THE PEOPLE' "
-        "as centerpiece. Eagle silhouette, stars, and 'EST. 1776' as accents. "
-        "Red white and blue aged parchment aesthetic. Pure white background. DTG print ready."
+        "Vintage typographic t-shirt design. Large distressed varsity text 'WE THE PEOPLE' "
+        "as centerpiece. Bold eagle silhouette, stars, and 'EST. 1776' below as accents. "
+        "Aged parchment ink texture feel."
     ),
     "america est 1776 founding fathers vintage": (
-        "Vintage circular badge t-shirt design. Eagle at center, stars around the border. "
-        "Bold text 'AMERICA' at top of badge, 'EST. 1776' at bottom. "
-        "Distressed aged texture, red white and blue Americana stamp style. "
-        "Pure white background. DTG print ready."
+        "Vintage circular badge t-shirt design. Eagle at center with wings spread, stars around the border. "
+        "Bold distressed text 'AMERICA' arched at top of badge, 'EST. 1776' at bottom. "
+        "Classic Americana stamp style, aged ink texture."
     ),
     "patrick henry give me liberty or give me coffee": (
-        "Vintage t-shirt graphic. Illustrated Patrick Henry at a podium, dramatic expression, "
-        "pointing finger, holding a coffee cup instead of a torch. Colonial setting. "
-        "Bold distressed text: 'GIVE ME LIBERTY OR GIVE ME COFFEE'. "
-        "Pure white background. DTG print ready."
+        "Vintage t-shirt graphic. Illustrated Patrick Henry at a podium, dramatic pointing finger, "
+        "holding a coffee cup instead of a torch. "
+        "Bold distressed vintage text: 'GIVE ME LIBERTY' at top, 'OR GIVE ME COFFEE' at bottom."
     ),
     "george washington first in war first in peace first in swag": (
         "Vintage t-shirt graphic. Cool portrait of George Washington in colonial uniform "
-        "wearing sunglasses, relaxed confident pose. Bold distressed vintage aged text: "
-        "'FIRST IN WAR. FIRST IN PEACE. FIRST IN SWAG.' Stars and flag accents, "
-        "vintage red white blue. Pure white background. DTG print ready."
+        "wearing sunglasses, relaxed confident pose. Stars and flag accents. "
+        "Bold distressed text: 'FIRST IN WAR. FIRST IN PEACE. FIRST IN SWAG.' at bottom."
     ),
     "America 250th birthday 1776 2026": (
-        "Patriotic vintage t-shirt graphic celebrating America's 250th birthday. "
-        "Majestic bald eagle with wings spread, surrounded by stars and fireworks. "
-        "Bold distressed vintage aged text: '250 YEARS' at top, '1776 - 2026' below. Vintage Americana style, "
-        "distressed textures, red white blue. Pure white background. DTG print ready."
+        "Vintage patriotic t-shirt graphic celebrating America's 250th birthday. "
+        "Majestic bald eagle with wings spread, surrounded by stars and burst rays. "
+        "Bold distressed text: '250 YEARS' arched at top, '1776 - 2026' at bottom."
     ),
     "250 years of freedom 1776 2026": (
-        "Bold patriotic vintage t-shirt typography design. Large distressed text "
-        "'250 YEARS OF FREEDOM' as centerpiece. '1776 - 2026' in vintage stamp style below. "
-        "Stars, stripes, eagle silhouette as accents. Aged Americana aesthetic, red white blue. "
-        "Pure white background. DTG print ready."
+        "Vintage typographic t-shirt design. Large distressed text '250 YEARS OF FREEDOM' "
+        "as centerpiece. '1776 - 2026' in aged stamp style below. "
+        "Stars, stripes, eagle silhouette as accents."
     ),
     "party like its 1776": (
-        "Fun vintage t-shirt graphic. Founding fathers — Washington, Franklin, Jefferson — "
-        "with powdered wigs askew, holding drinks, celebrating wildly. "
-        "Bold distressed handwritten vintage text: 'PARTY LIKE IT'S 1776' at bottom. "
-        "Pure white background. DTG print ready."
+        "Vintage t-shirt graphic. Founding fathers — Washington, Franklin, Jefferson — "
+        "with powdered wigs askew, holding drinks, celebrating wildly. Fun chaotic energy. "
+        "Bold distressed handwritten text at bottom: 'PARTY LIKE IT\\'S 1776'."
     ),
     "its only treason if you lose": (
-        "Bold vintage t-shirt typographic design. Large distressed text "
-        "'IT'S ONLY TREASON IF YOU LOSE' as the main statement. "
-        "Eagle silhouette and stars as accents, aged vintage style. "
-        "Red white blue distressed fonts. Pure white background. DTG print ready."
+        "Vintage typographic t-shirt design. Large distressed aged text "
+        "'IT\\'S ONLY TREASON IF YOU LOSE' as the bold main statement. "
+        "Eagle silhouette and stars as accents."
     ),
 }
 
 _FALLBACK_PROMPT = (
-    "Viral Etsy best-seller vintage t-shirt graphic design. Theme: {theme}. "
-    "Founding fathers humor style — Washington, Franklin, Jefferson, Hamilton in humorous modern situations. "
-    "Colonial attire with modern accessories like sunglasses. Bold distressed typography. "
-    "Red white and blue color palette, aged vintage Americana aesthetic. "
-    "Pure white background. DTG print ready."
+    "Vintage worn screen-print t-shirt graphic. Founding fathers humor theme: {theme}. "
+    "Washington, Franklin, Jefferson, Hamilton in humorous modern situations, colonial attire "
+    "with modern accessories like sunglasses. Bold distressed typography. "
+    "Limited color palette: navy blue, red, cream. Aged ink texture. Pure white background."
 )
 
 
@@ -159,7 +152,8 @@ def _slugify(text: str) -> str:
 async def generate_design(keyword: str, out_dir: Path | None = None) -> Path:
     """Generate design via Ideogram v2 with text baked in, save transparent PNG."""
     settings = get_settings()
-    prompt = _PROMPTS.get(keyword) or _FALLBACK_PROMPT.format(theme=keyword)
+    base = _PROMPTS.get(keyword) or _FALLBACK_PROMPT.format(theme=keyword)
+    prompt = base + _STYLE
     log.info("Generating design for %r via Ideogram v2", keyword)
 
     async with httpx.AsyncClient(timeout=120) as client:
