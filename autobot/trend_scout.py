@@ -1,8 +1,8 @@
 """
 Keyword source for the daily pipeline.
 
-Currently focused on America's 250th birthday (July 4th 2026) — the biggest
-patriotic shopping event in a generation. Will switch to evergreen pool after July 4th.
+Focused on founding fathers / historical humor style — the viral Etsy niche
+for July 4th 2026 / America's 250th birthday.
 """
 from __future__ import annotations
 
@@ -12,54 +12,42 @@ from datetime import date
 
 log = logging.getLogger(__name__)
 
-# July 4th 2026 — America's 250th birthday keywords
 _JULY4TH_POOL = [
-    # Patriotic animals (viral Etsy style)
-    "patriotic raccoon holding American flag",
-    "bald eagle wearing sunglasses fourth of july",
-    "patriotic golden retriever with hot dog and flag",
-    "american bulldog fourth of july vibes",
-    "patriotic bear drinking beer with flag",
-    "feral cat fourth of july chaos",
-    "patriotic labrador with fireworks",
-    "american raccoon eating hot dog",
-    "patriotic corgi wearing stars and stripes",
-    "bald eagle screaming freedom",
-    # 250th anniversary specific
-    "America 250th birthday 1776 2026",
-    "250 years of freedom 1776 2026",
-    "Americas 250th anniversary celebration",
-    "semiquincentennial celebration America",
-    "250 years strong America birthday",
-    # Classic patriotic
-    "merica fourth of july party",
-    "fourth of july barbecue squad",
-    "land of the free home of the brave",
-    "born on the fourth of july",
-    "fireworks and freedom fourth of july",
-    "red white and boom fourth of july",
-    "stars stripes and summer vibes",
-    "all american summer cookout",
-    "july fourth grilling and chilling",
-    "proud american fourth of july",
-    # Funny patriotic
-    "lets get this bread fourth of july",
-    "hot dogs hotdogs america july fourth",
-    "fireworks director fourth of july",
-    "american by birth patriot by choice",
-    "freedom aint free july fourth",
-    "party like its 1776",
-    "1776 vibes only fourth of july",
-    "mullet and fireworks fourth of july",
-    # Founding fathers viral style
+    # Founding fathers viral humor (primary focus)
     "wtf is a kilometer bald eagle",
     "dream team of 1776 founding fathers basketball",
     "ben drankin benjamin franklin fourth of july",
     "1776 national champs founding fathers",
     "its only treason if you lose george washington",
+    "george washington crossing the delaware sunglasses",
+    "founding fathers fourth of july squad goals",
+    "hamilton jefferson washington rap battle 1776",
+    "benjamin franklin original founding bro",
+    "washington adams jefferson 1776 all stars",
+    "founding fathers we did it first america",
+    "thomas jefferson wrote that fourth of july",
+    "george washington first in war first in peace first in swag",
+    "patrick henry give me liberty or give me coffee",
+    "founding fathers approved this message 1776",
+    "john hancock signed it bigger fourth of july",
+    "paul revere the british are coming fourth of july",
+    "1776 original bad boys founding fathers",
+    "america est 1776 founding fathers vintage",
+    "we the people fourth of july founding fathers",
+    # 250th anniversary
+    "America 250th birthday 1776 2026",
+    "250 years of freedom 1776 2026",
+    "Americas 250th anniversary celebration",
+    "1776 2026 semiquincentennial america",
+    "250 years strong america birthday",
+    # Classic funny patriotic
+    "party like its 1776",
+    "its only treason if you lose",
+    "freedom aint free july fourth",
+    "merica fourth of july party",
+    "mullet and fireworks fourth of july",
 ]
 
-# Evergreen pool — used after July 4th passes
 _EVERGREEN_POOL = [
     "hiking adventure", "camping life", "fishing dad", "dog mom",
     "cat dad", "nurse life", "teacher appreciation", "military veteran",
@@ -71,7 +59,6 @@ _EVERGREEN_POOL = [
 
 def _active_pool() -> list[str]:
     today = date.today()
-    # Use July 4th pool from now until July 10th 2026
     if date(2026, 6, 1) <= today <= date(2026, 7, 10):
         return _JULY4TH_POOL
     return _EVERGREEN_POOL
