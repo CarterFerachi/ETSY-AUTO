@@ -171,11 +171,16 @@ def _remove_green_background(image_bytes: bytes, threshold: int = 30) -> bytes:
             and abs(b - bg_b) <= threshold
         )
 
-    # BFS flood fill from all four corners
+    # BFS flood fill seeded from every pixel on all four edges
     visited = [[False] * h for _ in range(w)]
     queue: list[tuple[int, int]] = []
-    seed_corners = [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]
-    for sx, sy in seed_corners:
+    border: list[tuple[int, int]] = (
+        [(x, 0) for x in range(w)]
+        + [(x, h - 1) for x in range(w)]
+        + [(0, y) for y in range(h)]
+        + [(w - 1, y) for y in range(h)]
+    )
+    for sx, sy in border:
         r, g, b, _ = pixels[sx, sy]
         if _is_bg(r, g, b) and not visited[sx][sy]:
             visited[sx][sy] = True
