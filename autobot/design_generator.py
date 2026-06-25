@@ -146,31 +146,51 @@ _FALLBACK_PROMPT = (
 )
 
 
-def _remove_green_background(image_bytes: bytes, threshold: int = 15) -> bytes:
-    """Sample corner color and remove only pixels very close to it."""
+def _remove_green_background(image_bytes: bytes, threshold: int = 30) -> bytes:
+    """Flood-fill from corners to remove only edge-connected background pixels."""
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
     w, h = img.size
+    pixels = img.load()
 
     # Sample corners to detect background color
     corners = [
-        img.getpixel((0, 0))[:3],
-        img.getpixel((w - 1, 0))[:3],
-        img.getpixel((0, h - 1))[:3],
-        img.getpixel((w - 1, h - 1))[:3],
+        pixels[0, 0][:3],
+        pixels[w - 1, 0][:3],
+        pixels[0, h - 1][:3],
+        pixels[w - 1, h - 1][:3],
     ]
     bg_r = int(sum(c[0] for c in corners) / 4)
     bg_g = int(sum(c[1] for c in corners) / 4)
     bg_b = int(sum(c[2] for c in corners) / 4)
     log.info("Detected background color: rgb(%d,%d,%d)", bg_r, bg_g, bg_b)
 
-    data = img.getdata()
-    new_data = []
-    for r, g, b, a in data:
-        if abs(r - bg_r) <= threshold and abs(g - bg_g) <= threshold and abs(b - bg_b) <= threshold:
-            new_data.append((r, g, b, 0))
-        else:
-            new_data.append((r, g, b, a))
-    img.putdata(new_data)
+    def _is_bg(r: int, g: int, b: int) -> bool:
+        return (
+            abs(r - bg_r) <= threshold
+            and abs(g - bg_g) <= threshold
+            and abs(b - bg_b) <= threshold
+        )
+
+    # BFS flood fill from all four corners
+    visited = [[False] * h for _ in range(w)]
+    queue: list[tuple[int, int]] = []
+    seed_corners = [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]
+    for sx, sy in seed_corners:
+        r, g, b, _ = pixels[sx, sy]
+        if _is_bg(r, g, b) and not visited[sx][sy]:
+            visited[sx][sy] = True
+            queue.append((sx, sy))
+
+    while queue:
+        x, y = queue.pop()
+        pixels[x, y] = (pixels[x, y][0], pixels[x, y][1], pixels[x, y][2], 0)
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < w and 0 <= ny < h and not visited[nx][ny]:
+                pr, pg, pb, _ = pixels[nx, ny]
+                if _is_bg(pr, pg, pb):
+                    visited[nx][ny] = True
+                    queue.append((nx, ny))
+
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()
