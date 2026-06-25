@@ -60,6 +60,11 @@ async def post_for_approval(title: str, image_path: Path, image_url: str) -> str
 
     message_id: str = r.json()["id"]
     log.info("Posted design to Discord — message_id=%s", message_id)
+
+    # Start polling for ❌ reactions
+    from .discord_bot import watch_message
+    await watch_message(message_id)
+
     return message_id
 
 
