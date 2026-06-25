@@ -116,6 +116,7 @@ async def create_product(
     image_id: str,
     tags: list[str],
     retail_price_cents: int,
+    mockup_url: str | None = None,
 ) -> str:
     """Create a Printify product and return its product ID."""
     settings = get_settings()
@@ -153,6 +154,12 @@ async def create_product(
         ],
         "tags": tags[:13],  # Etsy allows 13
     }
+
+    # Lifestyle mockup as the first/default image so Etsy thumbnail looks realistic
+    if mockup_url:
+        product_payload["images"] = [
+            {"src": mockup_url, "position": "front", "is_default": True, "is_selected_for_publishing": True}
+        ]
 
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.post(

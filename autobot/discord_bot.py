@@ -96,7 +96,7 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     """Download the attached image and push it straight to Printify + Etsy."""
     # Lazy import to avoid circular deps
     from .pipeline import _make_title, _make_description, _make_tags
-    from .printify_agent import add_lifestyle_image, create_product, publish_product, upload_image
+    from .printify_agent import create_product, publish_product, upload_image
     from .higgsfield_agent import generate_mockup
     from .config import get_settings
 
@@ -156,10 +156,8 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
             image_id=image_id,
             tags=tags,
             retail_price_cents=int(settings.base_price_usd * 100),
+            mockup_url=mockup_url or None,
         )
-
-        if mockup_url:
-            await add_lifestyle_image(product_id, mockup_url)
 
         await publish_product(product_id)
 

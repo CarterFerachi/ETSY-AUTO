@@ -111,11 +111,12 @@ async def generate_mockup(design_path: Path, out_dir: Path | None = None) -> Pat
         media_id = await _upload_media(client, design_path)
 
         prompt = (
-            "Photorealistic lifestyle photo of a young adult wearing a white garment-dyed "
-            "t-shirt with this exact graphic design printed large and centered on the front. "
-            "Casual outdoor setting, natural daylight, clean background. "
-            "The design is clearly visible and faithfully reproduced on the shirt. "
-            "Professional product photography, slight smile, relaxed pose."
+            "Photorealistic product photo of a muscular male model with tattoos wearing a white "
+            "crew-neck t-shirt. The exact graphic design from the reference image is printed large "
+            "and centered on the front of the shirt, faithfully reproduced. "
+            "Patriotic background with bokeh fireworks and American flags. "
+            "Waist-up shot, confident pose, slight smirk. "
+            "Professional Etsy product photography, high contrast, vibrant colors."
         )
 
         log.info("Higgsfield: generating lifestyle mockup…")
