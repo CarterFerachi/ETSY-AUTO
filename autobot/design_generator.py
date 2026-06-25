@@ -71,11 +71,11 @@ _PROMPTS: dict[str, str] = {
         "Bold distressed text at bottom: 'UNBOTHERED'."
     ),
     "founding fathers fourth of july squad goals": (
-        "Vintage t-shirt graphic. Caricature group portrait — Washington with huge tall wig and aviators, "
-        "tiny round Adams, giant-nosed Franklin with bifocals and wispy side hair, "
-        "tall red-haired Jefferson, young baby-faced Hamilton. All in colonial attire, all with different sunglasses, "
-        "posed like a modern squad selfie, confident and cool. "
-        "Bold distressed text: 'SQUAD GOALS' arched at top, 'EST. 1776' at bottom with stars."
+        "Vintage t-shirt graphic. Exactly 5 founding fathers caricatures — Washington with huge tall wig and aviators, "
+        "tiny round Adams, pot-bellied Franklin with bifocals and wispy side hair, "
+        "tall red-haired Jefferson, young sharp-jawed Hamilton. All in colonial attire, different sunglasses, "
+        "posed like a modern squad photo, confident and cool. "
+        "Bold distressed navy blue text 'SQUAD GOALS' large at top, 'EST. 1776' in red at bottom with stars."
     ),
     "benjamin franklin original founding bro": (
         "Vintage t-shirt graphic. Portrait of a colonial-era statesman with wispy long grey hair "
