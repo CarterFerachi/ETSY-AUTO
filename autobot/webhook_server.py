@@ -18,6 +18,7 @@ from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from .config import get_settings
+from .discord_bot import start_bot, stop_bot
 from .fulfillment import fulfill_etsy_order
 from .pipeline import run_pipeline
 from .scheduler import start_scheduler, stop_scheduler
@@ -28,8 +29,10 @@ log = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     start_scheduler()
+    await start_bot()
     yield
     stop_scheduler()
+    await stop_bot()
 
 
 app = FastAPI(title="Etsy-Printify Autobot", lifespan=lifespan)
