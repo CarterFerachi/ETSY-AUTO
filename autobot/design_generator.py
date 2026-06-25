@@ -24,58 +24,58 @@ _PROMPTS: dict[str, str] = {
     "wtf is a kilometer bald eagle": (
         "Vintage t-shirt graphic design. Detailed ink illustration of a bald eagle head "
         "with flowing white feathers styled like a colonial wig, wearing red American flag "
-        "wayfarer sunglasses. Bold brush-stroke text: 'WTF IS A' at top in navy blue, "
+        "wayfarer sunglasses. Bold distressed vintage brush-stroke text: 'WTF IS A' at top in navy blue, "
         "'KILOMETER?' below in red. Vintage engraving crosshatch style, high contrast "
         "black and white with red and blue accents. Pure white background. DTG print ready."
     ),
     "dream team of 1776 founding fathers basketball": (
         "Vintage sports poster t-shirt graphic. Illustrated portrait of five founding fathers — "
         "George Washington center, Benjamin Franklin, Thomas Jefferson, John Adams, Alexander Hamilton — "
-        "wearing USA Basketball jerseys in red white blue. Bold text at top: 'DREAM TEAM' in large "
+        "wearing USA Basketball jerseys in red white blue. Bold distressed vintage text at top: 'DREAM TEAM' in large "
         "red letters, 'OF 1776' below with stars. Pure white background. DTG print ready."
     ),
     "ben drankin benjamin franklin fourth of july": (
         "Vintage t-shirt graphic. Illustrated portrait of Benjamin Franklin wearing American flag "
         "aviator sunglasses and a red stars-and-stripes headband, holding up a glass of whiskey "
-        "with a wide grin. Distressed American flag in background. Bold varsity text: 'BEN' at top, "
+        "with a wide grin. Distressed American flag in background. Bold distressed varsity vintage text: 'BEN' at top, "
         "'DRANKIN' large below in white distressed font with stars. Red white and blue. "
         "Pure white background. DTG print ready."
     ),
     "1776 national champs founding fathers": (
         "Vintage championship poster t-shirt graphic. Group of six founding fathers in colonial "
         "uniforms all wearing cool black sunglasses, posed like a championship team photo. "
-        "George Washington front and center. Bold collegiate text at top: '1776 NATIONAL CHAMPS' "
+        "George Washington front and center. Bold distressed collegiate vintage text at top: '1776 NATIONAL CHAMPS' "
         "in cream and gold. Banner at bottom: 'EST. 1776' with eagle crest. Slate blue vintage style. "
         "Pure white background. DTG print ready."
     ),
     "its only treason if you lose george washington": (
         "Vintage t-shirt graphic. George Washington in colonial military uniform, wearing aviator "
         "sunglasses, striding confidently with fireworks exploding behind him. Action hero composition. "
-        "Bold clean text at bottom: 'IT'S ONLY TREASON IF YOU LOSE' in white. "
+        "Bold distressed vintage text at bottom: 'IT'S ONLY TREASON IF YOU LOSE' in white. "
         "Pure white background. DTG print ready."
     ),
     "george washington crossing the delaware sunglasses": (
         "Dramatic vintage t-shirt graphic. George Washington standing boldly at the front of a boat "
         "crossing a river, wearing aviator sunglasses, American flag waving behind him. "
-        "Epic cinematic composition, red white and blue. Bold text at bottom: 'UNBOTHERED' in white. "
+        "Epic cinematic composition, red white and blue. Bold distressed vintage text at bottom: 'UNBOTHERED' in white. "
         "Pure white background. DTG print ready."
     ),
     "founding fathers fourth of july squad goals": (
         "Vintage t-shirt graphic. Group portrait of Washington, Franklin, Jefferson, Hamilton, and Adams "
         "all wearing sunglasses, posed like a modern friend squad photo. Confident casual energy. "
-        "Bold text: 'SQUAD GOALS' at top, 'EST. 1776' at bottom with stars. "
+        "Bold distressed vintage aged text: 'SQUAD GOALS' at top, 'EST. 1776' at bottom with stars. "
         "Red white and blue vintage style. Pure white background. DTG print ready."
     ),
     "benjamin franklin original founding bro": (
         "Vintage t-shirt graphic. Portrait of Benjamin Franklin looking cool and confident, "
-        "wearing sunglasses, lightning bolt in background. Bold retro text: "
+        "wearing sunglasses, lightning bolt in background. Bold distressed retro vintage text: "
         "'ORIGINAL FOUNDING BRO' below portrait. Stars and stripes accents. "
         "Pure white background. DTG print ready."
     ),
     "1776 original bad boys founding fathers": (
         "Movie poster style vintage t-shirt graphic. Lineup of five founding fathers in colonial attire "
         "all wearing sunglasses, tough serious expressions like a police lineup or action movie poster. "
-        "Bold text at top: 'ORIGINAL BAD BOYS', large '1776' at bottom in vintage font. "
+        "Bold distressed vintage text at top: 'ORIGINAL BAD BOYS', large '1776' at bottom in vintage font. "
         "High contrast red white and blue. Pure white background. DTG print ready."
     ),
     "we the people fourth of july founding fathers": (
@@ -97,14 +97,14 @@ _PROMPTS: dict[str, str] = {
     ),
     "george washington first in war first in peace first in swag": (
         "Vintage t-shirt graphic. Cool portrait of George Washington in colonial uniform "
-        "wearing sunglasses, relaxed confident pose. Bold text: "
+        "wearing sunglasses, relaxed confident pose. Bold distressed vintage aged text: "
         "'FIRST IN WAR. FIRST IN PEACE. FIRST IN SWAG.' Stars and flag accents, "
         "vintage red white blue. Pure white background. DTG print ready."
     ),
     "America 250th birthday 1776 2026": (
         "Patriotic vintage t-shirt graphic celebrating America's 250th birthday. "
         "Majestic bald eagle with wings spread, surrounded by stars and fireworks. "
-        "Bold text: '250 YEARS' at top, '1776 - 2026' below. Vintage Americana style, "
+        "Bold distressed vintage aged text: '250 YEARS' at top, '1776 - 2026' below. Vintage Americana style, "
         "distressed textures, red white blue. Pure white background. DTG print ready."
     ),
     "250 years of freedom 1776 2026": (
@@ -116,7 +116,7 @@ _PROMPTS: dict[str, str] = {
     "party like its 1776": (
         "Fun vintage t-shirt graphic. Founding fathers — Washington, Franklin, Jefferson — "
         "with powdered wigs askew, holding drinks, celebrating wildly. "
-        "Bold handwritten text: 'PARTY LIKE IT'S 1776' at bottom. "
+        "Bold distressed handwritten vintage text: 'PARTY LIKE IT'S 1776' at bottom. "
         "Pure white background. DTG print ready."
     ),
     "its only treason if you lose": (
