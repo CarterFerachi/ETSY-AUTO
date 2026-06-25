@@ -16,7 +16,7 @@ class Settings:
 
     printify_api_key: str = os.getenv("PRINTIFY_API_KEY", "")
     printify_shop_id: str = os.getenv("PRINTIFY_SHOP_ID", "")
-    printify_blueprint_id: int = int(os.getenv("PRINTIFY_BLUEPRINT_ID", "6"))
+    printify_blueprint_id: int = int(os.getenv("PRINTIFY_BLUEPRINT_ID", "12"))   # 12 = Comfort Colors 1717
     printify_print_provider_id: int = int(os.getenv("PRINTIFY_PRINT_PROVIDER_ID", "99"))
 
     printful_api_key: str = os.getenv("PRINTFUL_API_KEY", "")

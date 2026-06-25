@@ -22,29 +22,54 @@ log = logging.getLogger(__name__)
 
 _BASE = "https://api.printify.com/v1"
 
-# 4 colors x 5 sizes = 20 variants (Black, White, Sand, Sport Grey — S through 2XL)
-_DEFAULT_VARIANTS = [
-    {"id": 12126, "price": 0, "is_enabled": True},  # Black / S
-    {"id": 12125, "price": 0, "is_enabled": True},  # Black / M
-    {"id": 12124, "price": 0, "is_enabled": True},  # Black / L
-    {"id": 12127, "price": 0, "is_enabled": True},  # Black / XL
-    {"id": 12128, "price": 0, "is_enabled": True},  # Black / 2XL
-    {"id": 12102, "price": 0, "is_enabled": True},  # White / S
-    {"id": 12101, "price": 0, "is_enabled": True},  # White / M
-    {"id": 12100, "price": 0, "is_enabled": True},  # White / L
-    {"id": 12103, "price": 0, "is_enabled": True},  # White / XL
-    {"id": 12104, "price": 0, "is_enabled": True},  # White / 2XL
-    {"id": 12054, "price": 0, "is_enabled": True},  # Sand / S
-    {"id": 12053, "price": 0, "is_enabled": True},  # Sand / M
-    {"id": 12052, "price": 0, "is_enabled": True},  # Sand / L
-    {"id": 12055, "price": 0, "is_enabled": True},  # Sand / XL
-    {"id": 12056, "price": 0, "is_enabled": True},  # Sand / 2XL
-    {"id": 12072, "price": 0, "is_enabled": True},  # Sport Grey / S
-    {"id": 12071, "price": 0, "is_enabled": True},  # Sport Grey / M
-    {"id": 12070, "price": 0, "is_enabled": True},  # Sport Grey / L
-    {"id": 12073, "price": 0, "is_enabled": True},  # Sport Grey / XL
-    {"id": 12074, "price": 0, "is_enabled": True},  # Sport Grey / 2XL
-]
+# Comfort Colors colors to enable (lowercase match against Printify color labels)
+_COMFORT_COLORS = {
+    "white", "ivory", "pepper", "blue jean", "seafoam",
+    "butter", "moss", "crimson", "grey", "washed denim",
+}
+
+# Sizes to enable
+_ENABLED_SIZES = {"s", "m", "l", "xl", "2xl"}
+
+# Cache: (blueprint_id, print_provider_id) → list of variant dicts
+_variant_cache: dict[tuple[int, int], list[dict]] = {}
+
+
+async def _fetch_variants(blueprint_id: int, print_provider_id: int) -> list[dict]:
+    """
+    Fetch available variants from Printify catalog and filter to desired
+    Comfort Colors colors + standard sizes. Results are cached in memory.
+    """
+    cache_key = (blueprint_id, print_provider_id)
+    if cache_key in _variant_cache:
+        return _variant_cache[cache_key]
+
+    settings = get_settings()
+    url = f"{_BASE}/catalog/blueprints/{blueprint_id}/print_providers/{print_provider_id}/variants.json"
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.get(url, headers=_headers())
+        r.raise_for_status()
+
+    all_variants = r.json().get("variants", [])
+    log.info("Fetched %d variants for blueprint %d / provider %d",
+             len(all_variants), blueprint_id, print_provider_id)
+
+    filtered = []
+    for v in all_variants:
+        options = {o["name"].lower(): o["value"].lower() for o in v.get("options", [])}
+        color = options.get("color", "")
+        size = options.get("size", "")
+        if color in _COMFORT_COLORS and size in _ENABLED_SIZES:
+            filtered.append({"id": v["id"], "price": 0, "is_enabled": True})
+
+    if not filtered:
+        # Fallback: enable all variants if filter matched nothing
+        log.warning("Color/size filter matched 0 variants — enabling all %d", len(all_variants))
+        filtered = [{"id": v["id"], "price": 0, "is_enabled": True} for v in all_variants]
+
+    log.info("Using %d variants after filtering", len(filtered))
+    _variant_cache[cache_key] = filtered
+    return filtered
 
 
 def _headers() -> dict[str, str]:
@@ -86,10 +111,11 @@ async def create_product(
     """Create a Printify product and return its product ID."""
     settings = get_settings()
 
-    variants = [
-        {**v, "price": retail_price_cents}
-        for v in _DEFAULT_VARIANTS
-    ]
+    base_variants = await _fetch_variants(
+        settings.printify_blueprint_id,
+        settings.printify_print_provider_id,
+    )
+    variants = [{**v, "price": retail_price_cents} for v in base_variants]
 
     product_payload: dict[str, Any] = {
         "title": title,
@@ -99,7 +125,7 @@ async def create_product(
         "variants": variants,
         "print_areas": [
             {
-                "variant_ids": [v["id"] for v in _DEFAULT_VARIANTS],
+                "variant_ids": [v["id"] for v in base_variants],
                 "placeholders": [
                     {
                         "position": "front",
