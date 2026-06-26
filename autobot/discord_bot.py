@@ -97,7 +97,9 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     # Lazy import to avoid circular deps
     from .pipeline import _make_title, _make_description, _make_tags
     from .printify_agent import create_product, publish_product, upload_image
-    from .dynamic_mockups import generate_lifestyle_mockup
+    from .dynamic_mockups import generate_lifestyle_mockup as dm_mockup
+    from .printful_mockups import generate_lifestyle_mockup as printful_mockup
+    from .imgbb import upload_to_imgbb
     from .config import get_settings
 
     settings = get_settings()
@@ -136,16 +138,35 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
         description = _make_description(keyword)
         tags = _make_tags(keyword)
 
-        # Generate lifestyle mockup via Dynamic Mockups
-        public_design_url = design_preview_url or image_url
+        # Upload design to imgbb for a stable public URL (Discord CDN URLs expire)
+        stable_design_url = await upload_to_imgbb(tmp)
+        public_design_url = stable_design_url or design_preview_url or image_url
+        log.info("Design URL for mockup APIs: %s", public_design_url)
+
         mockup_url: str | None = None
-        if settings.dynamic_mockups_api_key and public_design_url:
+
+        # Tier 1: Dynamic Mockups (catalog templates — pre-built with smart objects)
+        if not mockup_url and settings.dynamic_mockups_api_key and public_design_url:
             try:
-                log.info("Generating lifestyle mockup for %r…", keyword)
-                mockup_url = await generate_lifestyle_mockup(public_design_url)
-                log.info("Lifestyle mockup ready: %s", mockup_url)
+                log.info("Trying Dynamic Mockups for %r…", keyword)
+                mockup_url = await dm_mockup(public_design_url)
+                if mockup_url:
+                    log.info("Dynamic Mockups lifestyle photo: %s", mockup_url)
             except Exception:
-                log.exception("Mockup generation failed — continuing without it")
+                log.exception("Dynamic Mockups failed")
+
+        # Tier 2: Printful Mockup Generator (lifestyle model photos — reliable)
+        if not mockup_url and settings.printful_api_key and public_design_url:
+            try:
+                log.info("Trying Printful mockup generator for %r…", keyword)
+                mockup_url = await printful_mockup(public_design_url)
+                if mockup_url:
+                    log.info("Printful lifestyle photo: %s", mockup_url)
+            except Exception:
+                log.exception("Printful mockup failed")
+
+        if not mockup_url:
+            log.info("All mockup services failed — Printify will use its auto-generated images")
 
         product_id = await create_product(
             title=title,
