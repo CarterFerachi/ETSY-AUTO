@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import logging
 import time
 
@@ -15,109 +16,108 @@ _BASE = "https://api.printful.com"
 _POLL_INTERVAL = 5
 _POLL_TIMEOUT = 120
 
-# Cached after first successful discovery
 _cache: dict[str, int] = {}
 
-# Searched in order; first short-sleeve white result wins
-_PRODUCT_QUERIES = [
-    "Bella Canvas 3001",
-    "Gildan 64000 Softstyle",
-    "Comfort Colors 1717",
-    "unisex jersey t-shirt",
-    "unisex t-shirt",
-]
-
-# Words that identify a lifestyle/model photo in the extra list
 _LIFESTYLE_KEYS = ("male", "female", "model", "person", "lifestyle", "wearing")
 
 
-def _headers() -> dict[str, str]:
+def _bearer_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {get_settings().printful_api_key}"}
 
 
+def _basic_headers() -> dict[str, str]:
+    key = get_settings().printful_api_key
+    encoded = base64.b64encode(f"{key}:".encode()).decode()
+    return {"Authorization": f"Basic {encoded}"}
+
+
+async def _get(client: httpx.AsyncClient, path: str, **kwargs) -> httpx.Response | None:
+    """Try Bearer auth first, then Basic auth if 401."""
+    for headers in (_bearer_headers(), _basic_headers()):
+        r = await client.get(f"{_BASE}{path}", headers=headers, **kwargs)
+        log.debug("GET %s → %s (auth=%s)", path, r.status_code,
+                  "bearer" if "Bearer" in headers["Authorization"] else "basic")
+        if r.status_code != 401:
+            return r
+    log.error("Printful auth failed for GET %s — check PRINTFUL_API_KEY", path)
+    return None
+
+
+async def _post(client: httpx.AsyncClient, path: str, **kwargs) -> httpx.Response | None:
+    """Try Bearer auth first, then Basic auth if 401."""
+    for headers in (_bearer_headers(), _basic_headers()):
+        r = await client.post(f"{_BASE}{path}", headers=headers, **kwargs)
+        log.debug("POST %s → %s (auth=%s)", path, r.status_code,
+                  "bearer" if "Bearer" in headers["Authorization"] else "basic")
+        if r.status_code != 401:
+            return r
+    log.error("Printful auth failed for POST %s — check PRINTFUL_API_KEY", path)
+    return None
+
+
 async def _discover(client: httpx.AsyncClient) -> tuple[int, int] | None:
-    """
-    Discover a short-sleeve white t-shirt product and variant from Printful's catalog.
-    Returns (product_id, variant_id) or None.
-    """
-    for query in _PRODUCT_QUERIES:
-        try:
-            r = await client.get(
-                f"{_BASE}/products",
-                headers=_headers(),
-                params={"search": query},
-                timeout=30,
-            )
-            log.info("Printful product search %r → HTTP %s", query, r.status_code)
-            if not r.is_success:
-                log.warning("Printful search error: %s", r.text[:300])
-                continue
+    """Find a short-sleeve white t-shirt in Printful's catalog.
+    Returns (product_id, variant_id) or None."""
+    r = await _get(client, "/products", timeout=30)
+    if not r or not r.is_success:
+        log.error("Printful GET /products failed: %s", r.text[:300] if r else "no response")
+        return None
 
-            products = r.json().get("result", [])
-            log.info("Printful search %r: %d results", query, len(products))
-            for p in products[:5]:
-                log.info("  [%s] %s", p.get("id"), p.get("title"))
+    body = r.json()
+    products = body.get("result", [])
+    log.info("Printful catalog: %d total products", len(products))
 
-            for product in products:
-                pid = product.get("id")
-                title = (product.get("title") or "").lower()
-                if not pid:
-                    continue
-                # Skip anything that's not a regular short-sleeve tee
-                if any(s in title for s in (
-                    "long sleeve", "hoodie", "sweatshirt", "polo",
-                    "tank", "pocket tee", "v-neck",
-                )):
-                    continue
+    # Filter to short-sleeve unisex tees
+    tshirts = []
+    for p in products:
+        title = (p.get("title") or "").lower()
+        pid = p.get("id")
+        if not pid:
+            continue
+        if any(s in title for s in ("long sleeve", "hoodie", "sweatshirt", "polo",
+                                     "tank", "v-neck", "crop", "mug", "hat", "bag")):
+            continue
+        if any(k in title for k in ("t-shirt", "tee", "shirt")):
+            tshirts.append(p)
 
-                # Fetch variants for this product
-                rv = await client.get(
-                    f"{_BASE}/products/{pid}",
-                    headers=_headers(),
-                    timeout=30,
-                )
-                if not rv.is_success:
-                    continue
+    log.info("Printful: %d short-sleeve tees found", len(tshirts))
+    for p in tshirts[:10]:
+        log.info("  [%s] %s", p.get("id"), p.get("title"))
 
-                variants = rv.json().get("result", {}).get("variants", [])
-                # Prefer White / M; fall back to any White variant
-                chosen = None
-                for v in variants:
-                    color = (v.get("color") or "").lower()
-                    size = (v.get("size") or "").lower()
-                    if "white" in color:
-                        if size == "m":
-                            chosen = v
-                            break
-                        if chosen is None:
-                            chosen = v
+    for product in tshirts:
+        pid = product["id"]
+        rv = await _get(client, f"/products/{pid}", timeout=30)
+        if not rv or not rv.is_success:
+            continue
+        variants = rv.json().get("result", {}).get("variants", [])
+        chosen = None
+        for v in variants:
+            color = (v.get("color") or "").lower()
+            size = (v.get("size") or "").lower()
+            if "white" in color:
+                if size == "m":
+                    chosen = v
+                    break
+                if chosen is None:
+                    chosen = v
+        if chosen:
+            log.info("Printful: product_id=%s title=%r variant_id=%s %r",
+                     pid, product.get("title"), chosen["id"], chosen.get("name"))
+            return int(pid), int(chosen["id"])
 
-                if chosen:
-                    log.info(
-                        "Printful: product_id=%s title=%r variant_id=%s name=%r",
-                        pid, product.get("title"), chosen["id"], chosen.get("name"),
-                    )
-                    return int(pid), int(chosen["id"])
-
-        except Exception as exc:
-            log.warning("Printful discovery error for %r: %s", query, exc)
-
-    log.error("Printful: no suitable short-sleeve white t-shirt found")
+    log.error("Printful: no suitable white short-sleeve tee found")
     return None
 
 
 async def generate_lifestyle_mockup(design_url: str) -> str | None:
     """
-    Render the design onto a Printful t-shirt and return a lifestyle model photo URL.
-    Returns None on failure so the caller can fall back gracefully.
+    Generate a lifestyle mockup via Printful's Mockup Generator.
+    Returns a lifestyle model photo URL, or None on failure.
     """
-    settings = get_settings()
-    if not settings.printful_api_key:
-        log.info("PRINTFUL_API_KEY not set — skipping Printful mockup")
+    if not get_settings().printful_api_key:
         return None
 
     async with httpx.AsyncClient(timeout=120) as client:
-        # ── Discover product + variant (cached after first run) ───────────
         if "product_id" not in _cache:
             found = await _discover(client)
             if not found:
@@ -127,7 +127,6 @@ async def generate_lifestyle_mockup(design_url: str) -> str | None:
         product_id = _cache["product_id"]
         variant_id = _cache["variant_id"]
 
-        # ── Create mockup task ────────────────────────────────────────────
         task_body = {
             "variant_ids": [variant_id],
             "format": "jpg",
@@ -136,7 +135,6 @@ async def generate_lifestyle_mockup(design_url: str) -> str | None:
                     "placement": "front",
                     "image_url": design_url,
                     "position": {
-                        # Standard DTG print area for most unisex tees
                         "area_width": 1800,
                         "area_height": 2400,
                         "width": 1800,
@@ -148,16 +146,17 @@ async def generate_lifestyle_mockup(design_url: str) -> str | None:
             ],
         }
 
-        log.info("Printful: creating mockup task (product=%s, variant=%s, design=%s)",
-                 product_id, variant_id, design_url)
-        r = await client.post(
-            f"{_BASE}/mockup-generator/create-task/{product_id}",
-            headers=_headers(),
+        log.info("Printful: creating mockup task product=%s variant=%s", product_id, variant_id)
+        r = await _post(
+            client,
+            f"/mockup-generator/create-task/{product_id}",
             json=task_body,
             timeout=30,
         )
-        if not r.is_success:
-            log.error("Printful create-task error: %s %s", r.status_code, r.text[:500])
+        if not r or not r.is_success:
+            log.error("Printful create-task error: %s %s",
+                      r.status_code if r else "no response",
+                      r.text[:500] if r else "")
             return None
 
         body = r.json()
@@ -165,22 +164,19 @@ async def generate_lifestyle_mockup(design_url: str) -> str | None:
         if not task_key:
             log.error("Printful: no task_key in response: %s", str(body)[:500])
             return None
-        log.info("Printful mockup task: %s", task_key)
+        log.info("Printful mockup task_key: %s", task_key)
 
-        # ── Poll until done ───────────────────────────────────────────────
         deadline = time.monotonic() + _POLL_TIMEOUT
         while time.monotonic() < deadline:
             await asyncio.sleep(_POLL_INTERVAL)
-            r = await client.get(
-                f"{_BASE}/mockup-generator/task",
-                headers=_headers(),
+            r = await _get(
+                client,
+                "/mockup-generator/task",
                 params={"task_key": task_key},
                 timeout=30,
             )
-            if not r.is_success:
-                log.debug("Printful poll error: %s", r.status_code)
+            if not r or not r.is_success:
                 continue
-
             result = r.json().get("result", {})
             status = result.get("status", "")
             log.debug("Printful task %s: %s", task_key, status)
@@ -191,26 +187,21 @@ async def generate_lifestyle_mockup(design_url: str) -> str | None:
                 for m in mockups:
                     extras = m.get("extra", [])
                     log.info("  extras: %s", [e.get("title") for e in extras])
-                    # Prefer a lifestyle/model photo from the extra list
                     for extra in extras:
                         title = (extra.get("title") or "").lower()
                         url = extra.get("url", "")
                         if url and any(k in title for k in _LIFESTYLE_KEYS):
-                            log.info("Printful lifestyle photo chosen: %r → %s",
-                                     extra.get("title"), url)
+                            log.info("Printful lifestyle photo: %r → %s", extra.get("title"), url)
                             return url
-                    # Fall back to the flat mockup if no lifestyle found
-                    flat_url = m.get("mockup_url", "")
-                    if flat_url:
-                        log.info("Printful flat mockup (no lifestyle extra): %s", flat_url)
-                        return flat_url
-
-                log.warning("Printful: completed but no usable URL found")
+                    flat = m.get("mockup_url", "")
+                    if flat:
+                        log.info("Printful flat mockup (no lifestyle extra): %s", flat)
+                        return flat
                 return None
 
             if status == "failed":
-                log.error("Printful mockup task failed: %s", result)
+                log.error("Printful task failed: %s", result)
                 return None
 
-        log.error("Printful mockup timed out after %ss", _POLL_TIMEOUT)
+        log.error("Printful timed out after %ss", _POLL_TIMEOUT)
         return None

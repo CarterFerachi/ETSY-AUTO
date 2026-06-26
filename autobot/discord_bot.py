@@ -99,6 +99,7 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
     from .printify_agent import create_product, publish_product, upload_image
     from .dynamic_mockups import generate_lifestyle_mockup as dm_mockup
     from .printful_mockups import generate_lifestyle_mockup as printful_mockup
+    from .openai_mockups import generate_lifestyle_mockup as openai_mockup
     from .imgbb import upload_to_imgbb
     from .config import get_settings
 
@@ -165,8 +166,19 @@ async def _handle_owner_drop(message: dict, channel_id: str, token: str) -> None
             except Exception:
                 log.exception("Printful mockup failed")
 
+        # Tier 3: OpenAI — GPT-4o describes the design, DALL-E 3 generates lifestyle photo
+        # Always works since OpenAI key is active; design approximated from description
         if not mockup_url:
-            log.info("All mockup services failed — Printify will use its auto-generated images")
+            try:
+                log.info("Trying OpenAI (DALL-E 3) mockup for %r…", keyword)
+                mockup_url = await openai_mockup(public_design_url)
+                if mockup_url:
+                    log.info("OpenAI lifestyle photo: %s", mockup_url)
+            except Exception:
+                log.exception("OpenAI mockup failed")
+
+        if not mockup_url:
+            log.info("All mockup tiers failed — Printify will use its auto-generated images")
 
         product_id = await create_product(
             title=title,
