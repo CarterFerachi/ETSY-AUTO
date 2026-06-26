@@ -18,14 +18,7 @@ def get_scheduler() -> AsyncIOScheduler:
     global _scheduler
     if _scheduler is None:
         _scheduler = AsyncIOScheduler(timezone="UTC")
-        _scheduler.add_job(
-            _pipeline_job,
-            trigger=CronTrigger(hour=6, minute=0),
-            id="daily_pipeline",
-            name="Daily trend → design → list pipeline",
-            replace_existing=True,
-        )
-        log.info("Scheduler configured: daily pipeline at 06:00 UTC")
+        log.info("Scheduler: automated pipeline disabled — using manual Discord drops only")
     return _scheduler
 
 
