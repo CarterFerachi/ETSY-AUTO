@@ -67,18 +67,32 @@ async def _discover(client: httpx.AsyncClient) -> tuple[int, int] | None:
     products = body.get("result", [])
     log.info("Printful catalog: %d total products", len(products))
 
-    # Filter to short-sleeve unisex tees
-    tshirts = []
+    # Filter to standard fashion short-sleeve tees that have lifestyle model photos
+    priority_tees = []
+    other_tees = []
     for p in products:
         title = (p.get("title") or "").lower()
         pid = p.get("id")
         if not pid:
             continue
-        if any(s in title for s in ("long sleeve", "hoodie", "sweatshirt", "polo",
-                                     "tank", "v-neck", "crop", "mug", "hat", "bag")):
+        # Skip anything without lifestyle model extras
+        if any(s in title for s in (
+            "long sleeve", "hoodie", "sweatshirt", "polo",
+            "tank", "v-neck", "crop", "mug", "hat", "bag",
+            "all-over", "performance", "athletic", "kids",
+            "youth", "baby", "toddler", "dress", "raglan",
+            "baseball", "henley", "button", "compression",
+        )):
             continue
-        if any(k in title for k in ("t-shirt", "tee", "shirt")):
-            tshirts.append(p)
+        if "t-shirt" not in title and "tee" not in title:
+            continue
+        # Bella Canvas, Gildan, Comfort Colors, Next Level always have model photos
+        if any(b in title for b in ("bella", "canvas", "gildan", "comfort colors",
+                                     "next level", "district", "champion")):
+            priority_tees.append(p)
+        else:
+            other_tees.append(p)
+    tshirts = priority_tees + other_tees
 
     log.info("Printful: %d short-sleeve tees found", len(tshirts))
     for p in tshirts[:10]:
@@ -193,10 +207,9 @@ async def generate_lifestyle_mockup(design_url: str) -> str | None:
                         if url and any(k in title for k in _LIFESTYLE_KEYS):
                             log.info("Printful lifestyle photo: %r → %s", extra.get("title"), url)
                             return url
-                    flat = m.get("mockup_url", "")
-                    if flat:
-                        log.info("Printful flat mockup (no lifestyle extra): %s", flat)
-                        return flat
+                # No lifestyle extras — this product doesn't have model photos.
+                # Return None so caller falls through to OpenAI instead of using a flat shot.
+                log.warning("Printful: no lifestyle extras found — falling through to next tier")
                 return None
 
             if status == "failed":
